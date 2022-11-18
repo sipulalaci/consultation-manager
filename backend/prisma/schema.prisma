@@ -8,93 +8,93 @@ datasource db {
 }
 
 enum UserType {
-    STUDENT
-    TEACHER
+  STUDENT
+  TEACHER
 }
 
 enum PersonalProjectStatus {
-    PENDING
-    APPROVED
-    REJECTED
-    FAILED
-    DONE
+  PENDING
+  APPROVED
+  REJECTED
+  FAILED
+  DONE
 }
 
 model User {
-  id        String      @default(uuid()) @id
-  firebaseId String   @unique
-  email     String   @unique
-  name      String
-  type      UserType
-  department String?
-  neptun    String?
-  projects  Project[]
+  id               String            @id @default(uuid())
+  firebaseId       String            @unique
+  email            String            @unique
+  name             String
+  type             UserType
+  department       String?
+  neptun           String?
+  projects         Project[]
   personalProjects PersonalProject[]
-  consultations Consultation[]
-  questions Comment[]
+  consultations    Consultation[]
+  questions        Comment[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
 model Project {
-  id        String      @default(uuid()) @id
-  title      String
-  description String
-  capacity   Int
-  teacherId String
-  teacher  User @relation(fields: [teacherId], references: [id])
+  id               String            @id @default(uuid())
+  title            String
+  description      String
+  capacity         Int
+  teacherId        String
+  teacher          User              @relation(fields: [teacherId], references: [id])
   personalProjects PersonalProject[]
-  
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
 model PersonalProject {
-  id        String      @default(uuid()) @id
-  status PersonalProjectStatus
-  projectId String
-  project  Project @relation(fields: [projectId], references: [id])
-  studentId String
-  student  User @relation(fields: [studentId], references: [id])
+  id            String                @id @default(uuid())
+  status        PersonalProjectStatus
+  projectId     String
+  project       Project               @relation(fields: [projectId], references: [id])
+  studentId     String
+  student       User                  @relation(fields: [studentId], references: [id])
   consultations Consultation[]
-  schedules Schedule[]
+  schedules     Schedule[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
 model Consultation {
-  id        String      @default(uuid()) @id
-  participants User[]
+  id                String           @id @default(uuid())
+  participants      User[]
   personalProjectId String?
-  personalProject PersonalProject? @relation(fields: [personalProjectId], references: [id])
-  date DateTime
+  personalProject   PersonalProject? @relation(fields: [personalProjectId], references: [id])
+  date              DateTime
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
 model Schedule {
-    id        String      @default(uuid()) @id
-    personalProjectId String
-    personalProject PersonalProject @relation(fields: [personalProjectId], references: [id])
-    deadline DateTime
-    description String
-    questions Comment[]
+  id                String          @id @default(uuid())
+  personalProjectId String
+  personalProject   PersonalProject @relation(fields: [personalProjectId], references: [id])
+  deadline          DateTime
+  description       String
+  comments          Comment[]
 
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Comment {
-    id        String      @default(uuid()) @id
-    question String
-    userId String
-    user User @relation(fields: [userId], references: [id])
-    scheduleId String
-    schedule Schedule @relation(fields: [scheduleId], references: [id])
+  id         String   @id @default(uuid())
+  question   String
+  userId     String
+  user       User     @relation(fields: [userId], references: [id])
+  scheduleId String
+  schedule   Schedule @relation(fields: [scheduleId], references: [id])
 
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
