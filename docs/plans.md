@@ -1,0 +1,85 @@
+# Frontend
+
+- login
+- register
+- listazo nezet
+- új téma kiírás (oktató)
+- téma részletező
+  - jelentkezés
+- témáim oldal (oktatónak több is lehet, diaknak csak egy fog megjelenni)
+- jelentkezett téma részletező oldal
+  - téma címe
+  - leírás
+  - kitűzött célok és határidők
+    - következő "sprint" hozzáadása, tervekkel
+    - adott időszakhoz hozzászólás, több is, oda vissza
+
+# Backend
+
+- auth modul (firebase?)
+- user modul
+  - getUser
+  - registerUser
+  - updateUser?
+- project modul
+  - getProject
+  - getProjects
+  - postProject
+  - updateProject
+  - deleteProject
+- personalPoroject modul
+  - getAll
+  - getById
+  - postPP
+  - updatePP
+- consultation modul
+  - getAll
+  - getOne
+  - update
+- schedule modul
+  - create
+  - update
+  - getAll
+- comment moduk
+  - create
+  - getAll
+
+# DB
+
+- prisma
+- user
+  - id
+  - firebase_id
+  - email cím
+  - név
+  - type
+  - tanszék?
+  - neptun?
+- téma
+  - id
+  - cím
+  - leírás
+  - konzulens_id
+  - férőhely
+- personal_téma
+  - id
+  - status (függű, elfogadott, kész)
+  - téma_id
+  - diak_id
+- konzi
+  - id
+  - konzulens_id
+  - téma_id
+  - diak_id?
+  - idopont
+- ütemterv
+  - id
+  - határidő
+  - TODO lista (description)
+  - personal_tema_id
+- kérdések
+  - id
+  - ütemterv_id
+  - user_id
+  - date
+  - kérdés
