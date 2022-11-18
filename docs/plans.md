@@ -36,13 +36,13 @@
   - getAll
   - getOne
   - update
+  - postConsultation
 - schedule modul
   - create
   - update
   - getAll
 - comment moduk
   - create
-  - getAll
 
 # DB
 
