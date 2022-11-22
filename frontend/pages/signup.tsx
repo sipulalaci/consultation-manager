@@ -2,9 +2,10 @@ import type { NextPage } from "next";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
 import { Login } from "../components/Login/Login";
+import { SignUp } from "../components/Signup/Signup";
 
-const LoginPage: NextPage = () => {
-  return <Login />;
+const SignupPage: NextPage = () => {
+  return <SignUp />;
 };
 
-export default LoginPage;
+export default SignupPage;
