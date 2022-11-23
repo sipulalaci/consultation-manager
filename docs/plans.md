@@ -2,10 +2,8 @@
 
 - login
 - register
-- listazo nezet
+- listazo nezet (+jelentkezes)
 - új téma kiírás (oktató)
-- téma részletező
-  - jelentkezés
 - témáim oldal (oktatónak több is lehet, diaknak csak egy fog megjelenni)
 - jelentkezett téma részletező oldal
   - téma címe
@@ -13,6 +11,7 @@
   - kitűzött célok és határidők
     - következő "sprint" hozzáadása, tervekkel
     - adott időszakhoz hozzászólás, több is, oda vissza
+- konzik
 
 # Backend
 

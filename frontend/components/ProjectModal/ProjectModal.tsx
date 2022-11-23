@@ -9,18 +9,7 @@ import {
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import { useState } from "react";
-
-const style = {
-  position: "absolute" as "absolute",
-  top: "50%",
-  left: "50%",
-  transform: "translate(-50%, -50%)",
-  width: 500,
-  bgcolor: "background.paper",
-  borderRadius: 2,
-  boxShadow: 24,
-  p: 4,
-};
+import { style } from "../../consts/ModalStyle";
 
 export const blockInvalidNumberInputChar = (e: any) =>
   ["e", "E", "+", "-"].includes(e.key) && e.preventDefault();
