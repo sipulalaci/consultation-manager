@@ -14,16 +14,35 @@ import Container from "@mui/material/Container";
 
 import { FormControl, InputLabel, MenuItem, Select } from "@mui/material";
 import { Formik } from "formik";
+import { postRegister } from "../../api/api";
+import { toast } from "react-toastify";
+import { saveToStorage } from "../../utils/localStorageHelpers";
+import { AxiosError } from "axios";
+import { useRouter } from "next/router";
 
 export const SignUp = () => {
-  const [role, setRole] = React.useState("");
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const data = new FormData(event.currentTarget);
-    console.log({
-      email: data.get("email"),
-      password: data.get("password"),
-    });
+  const router = useRouter();
+
+  const handleRegister = async (values) => {
+    console.log(values);
+    const user = {
+      email: values.email,
+      password: values.password,
+      type: values.role,
+      name: `${values.firstName} ${values.lastName}`,
+      ...(values.role === "STUDENT"
+        ? { neptun: values.identifier }
+        : { department: values.identifier }),
+    };
+
+    try {
+      const response = await postRegister(user);
+      saveToStorage("token", response["access_token"]);
+
+      router.replace("/");
+    } catch (e) {
+      toast.error((e as AxiosError).message);
+    }
   };
 
   return (
@@ -37,7 +56,7 @@ export const SignUp = () => {
         identifier: "",
       }}
       onSubmit={(values) => {
-        console.log(values);
+        handleRegister(values);
       }}
     >
       {({ values, handleChange, handleSubmit, setFieldValue }) => (
@@ -66,7 +85,6 @@ export const SignUp = () => {
               <Grid container spacing={2}>
                 <Grid item xs={12} sm={6}>
                   <TextField
-                    autoComplete="given-name"
                     name="firstName"
                     onChange={handleChange}
                     value={values.firstName}
@@ -86,7 +104,6 @@ export const SignUp = () => {
                     onChange={handleChange}
                     label="Last Name"
                     name="lastName"
-                    autoComplete="family-name"
                   />
                 </Grid>
                 <Grid item xs={12}>
@@ -98,7 +115,6 @@ export const SignUp = () => {
                     onChange={handleChange}
                     label="Email Address"
                     name="email"
-                    autoComplete="email"
                   />
                 </Grid>
                 <Grid item xs={12}>
@@ -111,7 +127,6 @@ export const SignUp = () => {
                     label="Password"
                     type="password"
                     id="password"
-                    autoComplete="new-password"
                   />
                 </Grid>
                 <Grid item xs={12}>
@@ -124,8 +139,8 @@ export const SignUp = () => {
                       label="Role"
                       onChange={(e) => setFieldValue("role", e.target.value)}
                     >
-                      <MenuItem value={"student"}>Student</MenuItem>
-                      <MenuItem value={"teacher"}>Teacher</MenuItem>
+                      <MenuItem value={"STUDENT"}>Student</MenuItem>
+                      <MenuItem value={"TEACHER"}>Teacher</MenuItem>
                     </Select>
                   </FormControl>
                 </Grid>
@@ -137,7 +152,9 @@ export const SignUp = () => {
                       value={values.identifier}
                       onChange={handleChange}
                       name="identifier"
-                      label={role === "student" ? "Neptun" : "Department"}
+                      label={
+                        values.role === "student" ? "Neptun" : "Department"
+                      }
                     />
                   </Grid>
                 )}

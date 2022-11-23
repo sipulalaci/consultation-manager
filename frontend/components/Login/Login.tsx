@@ -1,4 +1,3 @@
-import { FormEvent } from "react";
 import Avatar from "@mui/material/Avatar";
 import Button from "@mui/material/Button";
 import CssBaseline from "@mui/material/CssBaseline";
@@ -9,15 +8,39 @@ import Box from "@mui/material/Box";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import Typography from "@mui/material/Typography";
 import Container from "@mui/material/Container";
+import { postLogin } from "../../api/api";
+import { saveToStorage } from "../../utils/localStorageHelpers";
+import { useFormik } from "formik";
+import { toast } from "react-toastify";
+import { useRouter } from "next/router";
 
 export const Login = () => {
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const data = new FormData(event.currentTarget);
-    console.log({
-      email: data.get("email"),
-      password: data.get("password"),
-    });
+  const router = useRouter();
+
+  const { values, handleChange, handleSubmit } = useFormik({
+    initialValues: {
+      email: "",
+      password: "",
+    },
+    onSubmit: async (values) => handleSubmit2(values),
+  });
+
+  const handleSubmit2 = async (values) => {
+    console.log({ values });
+    if (!values.email || !values.password) {
+      return;
+    }
+
+    try {
+      const response = await postLogin(values.email, values.password);
+      console.log({ response });
+
+      saveToStorage("token", response["access_token"]);
+      router.replace("/");
+    } catch (e) {
+      console.log({ e });
+      toast.error("Invalid credentials");
+    }
   };
 
   return (
@@ -37,7 +60,7 @@ export const Login = () => {
         <Typography component="h1" variant="h5">
           Sign in
         </Typography>
-        <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
+        <Box sx={{ mt: 1 }}>
           <TextField
             margin="normal"
             required
@@ -45,7 +68,8 @@ export const Login = () => {
             id="email"
             label="Email Address"
             name="email"
-            autoComplete="email"
+            value={values.email}
+            onChange={handleChange}
             autoFocus
           />
           <TextField
@@ -55,15 +79,20 @@ export const Login = () => {
             name="password"
             label="Password"
             type="password"
+            value={values.password}
+            onChange={handleChange}
             id="password"
-            autoComplete="current-password"
           />
 
           <Button
-            type="submit"
             fullWidth
             variant="contained"
             sx={{ mt: 3, mb: 2 }}
+            onClick={(e) => {
+              console.log("clicked");
+
+              handleSubmit();
+            }}
           >
             Sign In
           </Button>

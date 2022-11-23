@@ -22,13 +22,33 @@ export class ProjectController {
 
   @Get(':id')
   async getProject(@Param('id') id: string) {
-    const project = await this.prisma.project.findUnique({ where: { id } });
+    const project = await this.prisma.project.findUnique({
+      where: { id },
+    });
     return project;
   }
 
   @Get()
-  async getProjects(){
-    return this.prisma.project.findMany();
+  async getProjects() {
+    const projects = await this.prisma.project.findMany({
+      include: {
+        personalProjects: true,
+        teacher: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+      },
+    });
+
+    return projects.map((project) => {
+      const { personalProjects, ...projectWithoutPersonalProjects } = project;
+      return {
+        ...projectWithoutPersonalProjects,
+        personalProjectsCount: personalProjects.length,
+      };
+    });
   }
 
   @Put(':id')
@@ -44,7 +64,7 @@ export class ProjectController {
   @Delete(':id')
   async deleteProject(@Param(':id') id: any) {
     return this.prisma.project.delete({
-        where: { id }
+      where: { id },
     });
   }
 }

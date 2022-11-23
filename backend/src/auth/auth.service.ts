@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { UserType } from '@prisma/client';
+import { User, UserType } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
 
@@ -10,15 +10,21 @@ export class AuthService {
 
   async validateUser(email: string, pass: string): Promise<any> {
     const user = await this.prisma.user.findUnique({ where: { email } });
-    if (user && user.password === pass) {
+    if (!user) {
+      return null;
+    }
+
+    const isPasswordCorrect = await bcrypt.compare(pass, user.password);
+
+    if (isPasswordCorrect) {
       const { password, ...result } = user;
       return result;
     }
     return null;
   }
 
-  async login(user: any) {
-    const payload = { username: user.username, sub: user.userId };
+  async login(user: Partial<User>) {
+    const payload = { email: user.email, sub: user.id };
     return {
       access_token: this.jwtService.sign(payload),
     };

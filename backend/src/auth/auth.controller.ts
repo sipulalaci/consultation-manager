@@ -1,4 +1,10 @@
-import { Body, Controller, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Post,
+  UnauthorizedException,
+  UseGuards,
+} from '@nestjs/common';
 import { UserType } from '@prisma/client';
 import { AuthService } from './auth.service';
 import { LocalAuthGuard } from './local-auth.guard';
@@ -9,7 +15,15 @@ export class AuthController {
 
   @Post('login')
   async login(@Body() loginDto: { email: string; password: string }) {
-    return this.authService.login(loginDto);
+    const user = await this.authService.validateUser(
+      loginDto.email,
+      loginDto.password,
+    );
+    if (!user) {
+      throw new UnauthorizedException();
+    }
+
+    return this.authService.login(user);
   }
 
   @Post('register')
