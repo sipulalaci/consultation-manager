@@ -7,9 +7,11 @@ import { PersonalProjectModule } from 'src/personal-project/personal-project.mod
 import { ConsultationModule } from 'src/consultation/consultation.module';
 import { ScheduleModule } from 'src/schedule/schedule.module';
 import { CommentModule } from 'src/comment/comment.module';
+import { AuthModule } from '../auth/auth.module';
 
 @Module({
   imports: [
+    AuthModule,
     UserModule,
     ProjectModule,
     PersonalProjectModule,
