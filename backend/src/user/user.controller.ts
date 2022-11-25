@@ -36,7 +36,6 @@ export class UserController {
 
   @Post()
   async createUser(@Body() newUser: any) {
-    console.log('newUser', newUser);
     const user = await this.prisma.user.create({ data: newUser });
     return user;
   }

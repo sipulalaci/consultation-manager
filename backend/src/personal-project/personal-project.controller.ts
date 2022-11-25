@@ -47,7 +47,16 @@ export class PersonalProjectController {
         schedules: {
           include: {
             tasks: true,
-            comments: true,
+            comments: {
+              include: {
+                user: {
+                  select: {
+                    id: true,
+                    name: true,
+                  },
+                },
+              },
+            },
           },
         },
         project: {
@@ -62,8 +71,6 @@ export class PersonalProjectController {
         },
       },
     });
-
-    console.log({ userId, personalProject });
 
     if (
       !personalProject ||

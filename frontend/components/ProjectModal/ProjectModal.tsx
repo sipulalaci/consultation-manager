@@ -8,27 +8,32 @@ import {
   Typography,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { style } from "../../consts/ModalStyle";
 import { useFormik } from "formik";
 import { postProject } from "../../api/api";
 import { AxiosError } from "axios";
 import { toast } from "react-toastify";
+import { Context } from "../../contexts/UserContext";
 
 export const blockInvalidNumberInputChar = (e: any) =>
   ["e", "E", "+", "-"].includes(e.key) && e.preventDefault();
 
-export const ProjectModal = ({ onSuccess }) => {
+export const ProjectModal = ({ onSuccess, teacherId }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const context = useContext(Context);
 
   const handleCreate = async (values) => {
-    console.log(values);
+    if (!context || !context.user || !context?.isTeacher) {
+      handleCancel();
+      return;
+    }
+
     try {
       const response = await postProject({
         ...values,
-        teacherId: "1f3305b2-fd79-48d9-a2b7-08f4eae56423",
+        teacherId: context.user.id,
       });
-      console.log(response);
       onSuccess(response);
       handleCancel();
     } catch (e) {

@@ -30,7 +30,6 @@ export const ConsultationModal = () => {
         values.minute
       ),
     };
-    console.log(consultation);
   };
 
   return (

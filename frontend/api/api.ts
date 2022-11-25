@@ -1,5 +1,8 @@
-import axios from "axios";
-import { getFromStorage } from "../utils/localStorageHelpers";
+import axios, { AxiosRequestConfig } from "axios";
+import {
+  getFromStorage,
+  removeFromStorage,
+} from "../utils/localStorageHelpers";
 
 const baseApiConfig = {
   baseURL: "http://localhost:3001",
@@ -20,13 +23,38 @@ const publicApi = axios.create({
   },
 });
 
-protectedApi.interceptors.response.use((response) => {
-  if (response.status === 401) {
-    localStorage.removeItem("token");
-    window.location.href = "/login";
+protectedApi.interceptors.request.use(
+  async (axiosConfig: AxiosRequestConfig) => {
+    if (axiosConfig.headers === undefined) {
+      axiosConfig.headers = {};
+    }
+
+    const localStorageAuthToken = getFromStorage("token") || "";
+
+    if (localStorageAuthToken) {
+      axiosConfig.headers.Authorization = `Bearer ${localStorageAuthToken}`;
+    }
+
+    return axiosConfig;
+  },
+  (error) => {
+    Promise.reject(error);
   }
-  return response;
-});
+);
+
+protectedApi.interceptors.response.use(
+  (_) => _,
+  (error) => {
+    if (error.response.status === 401) {
+      if (typeof window !== "undefined") {
+        removeFromStorage("token");
+        // localStorage.removeItem("authToken");
+        window.location.href = `/login`;
+      }
+    }
+    return Promise.reject(error);
+  }
+);
 
 export const postLogin = async (email: string, password: string) => {
   const { data } = await publicApi.post("/auth/login", { email, password });
@@ -100,5 +128,20 @@ export const postScheduleAddTask = async (
     `/schedules/${scheduleId}/add-task`,
     task
   );
+  return data;
+};
+
+export const putScheduleToggleTask = async (
+  scheduleId: string,
+  taskId: string
+) => {
+  const { data } = await protectedApi.put(
+    `/schedules/${scheduleId}/toggle-task/${taskId}`
+  );
+  return data;
+};
+
+export const postComment = async (comment: any) => {
+  const { data } = await protectedApi.post("/comments", comment);
   return data;
 };

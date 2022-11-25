@@ -34,7 +34,6 @@ export const UserContext = ({ children }: UserContextProps) => {
   const isStudent = user?.type === UserEnum.STUDENT;
 
   useEffect(() => {
-    console.log({ user });
     if (!user) {
       const token = getFromStorage("token");
       if (token) {

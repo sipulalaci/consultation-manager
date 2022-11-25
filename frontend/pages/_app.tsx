@@ -1,6 +1,13 @@
 import "../styles/globals.css";
 import type { AppProps } from "next/app";
-import { AppBar, Box, Button, Toolbar, Typography } from "@mui/material";
+import {
+  AppBar,
+  Box,
+  Button,
+  IconButton,
+  Toolbar,
+  Typography,
+} from "@mui/material";
 import { GlobalStyle } from "../styles/GlobalStyle";
 import { getFromStorage } from "../utils/localStorageHelpers";
 import { useEffect } from "react";
@@ -8,6 +15,7 @@ import { useRouter } from "next/router";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { UserContext } from "../contexts/UserContext";
+import LogoutIcon from "@mui/icons-material/Logout";
 
 const menuElements = [
   {
@@ -63,11 +71,18 @@ function MyApp({ Component, pageProps }: AppProps) {
                     variant="h6"
                     key={element.name}
                     onClick={() => router.push(element.link)}
-                    sx={{ ":hover": { cursor: "pointer" }, fontSize: "1rem" }}
+                    sx={{
+                      ":hover": { cursor: "pointer" },
+                      fontSize: "1rem",
+                      alignSelf: "center",
+                    }}
                   >
                     {element.name}
                   </Typography>
                 ))}
+                <IconButton color="inherit">
+                  <LogoutIcon />
+                </IconButton>
               </Box>
             </Toolbar>
           </AppBar>

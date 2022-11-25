@@ -10,6 +10,14 @@ export class CommentController {
     console.log('newComment', newComment);
     const comment = await this.prisma.comment.create({
       data: newComment,
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+      },
     });
     return comment;
   }

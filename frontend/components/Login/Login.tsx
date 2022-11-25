@@ -29,21 +29,18 @@ export const Login = () => {
   });
 
   const handleSubmit2 = async (values) => {
-    console.log({ values });
     if (!values.email || !values.password) {
       return;
     }
 
     try {
       const response = await postLogin(values.email, values.password);
-      console.log({ response });
 
       saveToStorage("token", response["access_token"]);
       context?.setUser(response.user);
 
       router.replace("/");
     } catch (e) {
-      console.log({ e });
       toast.error("Invalid credentials");
     }
   };
@@ -93,11 +90,7 @@ export const Login = () => {
             fullWidth
             variant="contained"
             sx={{ mt: 3, mb: 2 }}
-            onClick={(e) => {
-              console.log("clicked");
-
-              handleSubmit();
-            }}
+            onClick={(e) => handleSubmit()}
           >
             Sign In
           </Button>

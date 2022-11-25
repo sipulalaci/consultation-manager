@@ -59,7 +59,6 @@ export const PersonalProjects = () => {
     if (context && context.user && !personalProjects.length) {
       getPersonalProjects()
         .then((response) => {
-          console.log({ response });
           setPersonalProjects(response);
         })
         .catch((error) => toast.error((error as AxiosError).message));

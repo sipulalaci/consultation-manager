@@ -1,4 +1,11 @@
-import { Body, Controller, Param, Post, Put } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  NotFoundException,
+  Param,
+  Post,
+  Put,
+} from '@nestjs/common';
 import { PrismaService } from 'prisma/prisma.service';
 
 @Controller('schedules')
@@ -7,7 +14,6 @@ export class ScheduleController {
 
   @Post()
   async createSchedule(@Body() newSchedule: any) {
-    console.log('newSchedule', newSchedule);
     const schedule = await this.prisma.schedule.create({
       data: newSchedule,
     });
@@ -34,5 +40,22 @@ export class ScheduleController {
     });
 
     return schedule;
+  }
+
+  @Put(':id/toggle-task/:taskId')
+  async updateTask(@Param('id') id: string, @Param('taskId') taskId: string) {
+    const task = await this.prisma.task.findUnique({
+      where: { id: taskId },
+    });
+    if (!task) {
+      throw new NotFoundException('Task not found id: ' + taskId);
+    }
+
+    const updatedTask = await this.prisma.task.update({
+      where: { id: taskId },
+      data: { isDone: !task.isDone },
+    });
+
+    return updatedTask;
   }
 }

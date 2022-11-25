@@ -24,7 +24,6 @@ export const SignUp = () => {
   const router = useRouter();
 
   const handleRegister = async (values) => {
-    console.log(values);
     const user = {
       email: values.email,
       password: values.password,
