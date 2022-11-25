@@ -12,6 +12,7 @@ import { JwtService } from '@nestjs/jwt';
 import { NotFoundError } from '@prisma/client/runtime';
 import { PrismaService } from 'prisma/prisma.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { Protected } from '../auth/jwt.decorator';
 import { jwtDecoder } from '../utils/jwtDecoder';
 
 @Controller('personal-projects')
@@ -21,7 +22,7 @@ export class PersonalProjectController {
     private readonly jwtService: JwtService,
   ) {}
 
-  @UseGuards(JwtAuthGuard)
+  @Protected()
   @Post()
   async createPersonalProject(@Body() newPersonalProject: any) {
     const personalProject = await this.prisma.personalProject.create({
@@ -33,7 +34,7 @@ export class PersonalProjectController {
     return personalProject;
   }
 
-  @UseGuards(JwtAuthGuard)
+  @Protected()
   @Get(':id')
   async getPersonalProject(
     @Param('id') id: string,
@@ -85,7 +86,7 @@ export class PersonalProjectController {
     return personalProject;
   }
 
-  @UseGuards(JwtAuthGuard)
+  @Protected()
   @Get()
   async getPersonalProjects(@Headers('Authorization') authorization: string) {
     const userId = await jwtDecoder(authorization, this.jwtService);
@@ -121,6 +122,7 @@ export class PersonalProjectController {
     });
   }
 
+  @Protected()
   @Put(':id')
   async updatePersonalProject(
     @Param('id') id: any,

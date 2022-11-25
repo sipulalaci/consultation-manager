@@ -11,18 +11,20 @@ import {
 import { PersonalProjectStatus } from '@prisma/client';
 import { PrismaService } from 'prisma/prisma.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { Protected } from '../auth/jwt.decorator';
 
 @Controller('projects')
 export class ProjectController {
   constructor(private readonly prisma: PrismaService) {}
 
-  @UseGuards(JwtAuthGuard)
+  @Protected()
   @Post()
   async createProject(@Body() newProject: any) {
     const project = await this.prisma.project.create({ data: newProject });
     return project;
   }
 
+  @Protected()
   @Get(':id')
   async getProject(@Param('id') id: string) {
     const project = await this.prisma.project.findUnique({
@@ -31,6 +33,7 @@ export class ProjectController {
     return project;
   }
 
+  @Protected()
   @Get()
   async getProjects() {
     const projects = await this.prisma.project.findMany({
@@ -62,6 +65,7 @@ export class ProjectController {
     });
   }
 
+  @Protected()
   @Put(':id')
   async updateProject(@Param('id') id: any, @Body() updatedProject: any) {
     const project = await this.prisma.project.update({
@@ -72,6 +76,7 @@ export class ProjectController {
     return project;
   }
 
+  @Protected()
   @Delete(':id')
   async deleteProject(@Param(':id') id: any) {
     return this.prisma.project.delete({

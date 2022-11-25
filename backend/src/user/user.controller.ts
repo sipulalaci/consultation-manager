@@ -12,7 +12,7 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../../prisma/prisma.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
-import { User } from '../auth/jwt.decorator';
+import { Protected, User } from '../auth/jwt.decorator';
 
 @Controller('users')
 export class UserController {
@@ -21,7 +21,7 @@ export class UserController {
     private readonly jwtService: JwtService,
   ) {}
 
-  @UseGuards(JwtAuthGuard)
+  @Protected()
   @Get('me')
   async getMe(@Headers('Authorization') authorization: string) {
     const token = authorization.replace('Bearer ', '');
@@ -40,13 +40,14 @@ export class UserController {
     return user;
   }
 
-  @UseGuards(JwtAuthGuard)
+  @Protected()
   @Get(':id')
   async getUser(@Param('id') id: string) {
     const user = await this.prisma.user.findUnique({ where: { id } });
     return user;
   }
 
+  @Protected()
   @Put(':id')
   async updateUser(@Param('id') id: any, @Body() updatedUser: any) {
     const user = await this.prisma.user.update({
