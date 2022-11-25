@@ -34,6 +34,9 @@ import CloseIcon from "@mui/icons-material/Close";
 import { Stack } from "@mui/system";
 import { format } from "date-fns";
 import { Context, User } from "../../contexts/UserContext";
+import { Comment as CommentComponent } from "../Comment/Comment";
+import { QAndA } from "../QAndA/QAndA";
+import { Tasks } from "../Tasks/Tasks";
 
 export interface Schedule {
   id: string;
@@ -42,10 +45,10 @@ export interface Schedule {
   deadline: Date;
   createdAt: Date;
   tasks: Task[];
-  comments: Question[];
+  comments: Comment[];
 }
 
-export interface Question {
+export interface Comment {
   id: string;
   scheduleId: string;
   question: string;
@@ -69,10 +72,6 @@ export const PersonalProjectDetails = () => {
   >(null);
   const [activeSchedule, setActiveSchedule] = useState(0);
   const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
-  const [isAddingTask, setIsAddingTask] = useState(false);
-  const [createdTaskDescrption, setCreatedTaskDescrption] = useState("");
-  const [isAddingQuestion, setIsAddingQuestion] = useState(false);
-  const [createdQuestion, setCreatedQuestion] = useState("");
   const context = useContext(Context);
 
   const handleScheduleCreate = async (schedule: {
@@ -97,10 +96,10 @@ export const PersonalProjectDetails = () => {
     );
   };
 
-  const addTask = async (scheduleId: string) => {
-    if (!personalProject || !createdTaskDescrption) return;
+  const handleTaskCreate = async (scheduleId: string, text: string) => {
+    if (!personalProject) return;
     const newTask = await postScheduleAddTask(scheduleId, {
-      description: createdTaskDescrption,
+      description: text,
     });
 
     setPersonalProject((currentState) =>
@@ -118,17 +117,14 @@ export const PersonalProjectDetails = () => {
           }
         : null
     );
-    setIsAddingTask(false);
-    setCreatedTaskDescrption("");
   };
 
-  const handleCommentCreate = async (scheduleId: string) => {
-    if (!personalProject || !createdQuestion || !context || !context.user)
-      return;
+  const handleCommentCreate = async (scheduleId: string, text: string) => {
+    if (!personalProject || !context || !context.user) return;
 
     try {
       const newQuestion = await postComment({
-        question: createdQuestion,
+        question: text,
         scheduleId,
         userId: context.user.id,
       });
@@ -142,7 +138,7 @@ export const PersonalProjectDetails = () => {
                       ...schedule,
                       comments: [
                         ...(schedule.comments ?? []),
-                        newQuestion as Question,
+                        newQuestion as Comment,
                       ],
                     }
                   : schedule
@@ -256,174 +252,22 @@ export const PersonalProjectDetails = () => {
                       <Divider sx={{ margin: "1rem 0" }} />
                       <Typography fontWeight={600}>Tasks:</Typography>
 
-                      {schedule.tasks && schedule.tasks.length ? (
-                        <Stack>
-                          {schedule.tasks.map((task) => (
-                            <FormControlLabel
-                              key={task.id}
-                              label={task.description}
-                              control={
-                                <Checkbox
-                                  checked={task.isDone}
-                                  onClick={() =>
-                                    handleTaskToggle(schedule.id, task.id)
-                                  }
-                                />
-                              }
-                            />
-                          ))}
-                        </Stack>
-                      ) : (
-                        <Typography>
-                          There are no tasks for this element, please add one.
-                        </Typography>
-                      )}
-                      <Collapse in={isAddingTask}>
-                        <Box sx={{ display: "flex" }}>
-                          <TextField
-                            label="Description"
-                            name="description"
-                            variant="outlined"
-                            value={createdTaskDescrption}
-                            onChange={(e) =>
-                              setCreatedTaskDescrption(e.target.value)
-                            }
-                            sx={{ width: "100%" }}
-                          />
-                          <IconButton
-                            aria-label="add"
-                            onClick={() => addTask(schedule.id)}
-                            color="success"
-                            sx={{ width: "3.5rem", height: "3.5rem" }}
-                          >
-                            <CheckIcon />
-                          </IconButton>
-                          <IconButton
-                            aria-label="add"
-                            onClick={() => {
-                              setIsAddingTask(false);
-                              setCreatedTaskDescrption("");
-                            }}
-                            color="warning"
-                            sx={{ width: "3.5rem", height: "3.5rem" }}
-                          >
-                            <CloseIcon />
-                          </IconButton>
-                        </Box>
-                      </Collapse>
-                      <Collapse in={!isAddingTask}>
-                        <Box
-                          sx={{
-                            display: "flex",
-                            justifyContent: "center",
-                            alignItems: "center",
-                          }}
-                        >
-                          <IconButton
-                            aria-label="add"
-                            size="large"
-                            onClick={() => {
-                              setIsAddingTask(true);
-                            }}
-                          >
-                            <AddIcon />
-                          </IconButton>
-                        </Box>
-                      </Collapse>
+                      <Tasks
+                        tasks={schedule.tasks}
+                        onTaskCreate={(text) =>
+                          handleTaskCreate(schedule.id, text)
+                        }
+                        onTaskToggle={(id) => handleTaskToggle(schedule.id, id)}
+                      />
                       <Divider sx={{ margin: "1rem 0" }} />
-                      <Typography fontWeight={600}>Q&A</Typography>
-                      {schedule?.comments.length ? (
-                        <Stack>
-                          {schedule.comments.map((comment) => (
-                            <Paper
-                              key={comment.id}
-                              sx={{ padding: "1rem", marginBottom: "1rem" }}
-                            >
-                              <Box
-                                sx={{
-                                  display: "flex",
-                                  gap: ".5rem",
-                                  ...(comment.userId === context?.user?.id
-                                    ? {
-                                        justifyContent: "flex-start",
-                                        flexDirection: "row-reverse",
-                                      }
-                                    : {
-                                        justifyContent: "flex-start",
-                                      }),
-                                }}
-                              >
-                                <Typography fontWeight={600}>
-                                  {comment.user.name}
-                                </Typography>
-                                <Typography>{` | `}</Typography>
-                                <Typography>
-                                  {format(
-                                    new Date(comment.createdAt),
-                                    "yyyy.MM.dd"
-                                  )}
-                                </Typography>
-                              </Box>
-                              <Divider />
-                              <Typography>{comment.question}</Typography>
-                            </Paper>
-                          ))}
-                        </Stack>
-                      ) : (
-                        <Typography>There are no questions.</Typography>
-                      )}
-                      <Collapse in={isAddingQuestion}>
-                        <Box sx={{ display: "flex" }}>
-                          <TextField
-                            label="Text"
-                            name="text"
-                            variant="outlined"
-                            multiline
-                            rows={3}
-                            value={createdQuestion}
-                            onChange={(e) => setCreatedQuestion(e.target.value)}
-                            sx={{ width: "100%" }}
-                          />
-                          <IconButton
-                            aria-label="add"
-                            onClick={() => handleCommentCreate(schedule.id)}
-                            color="success"
-                            sx={{ width: "3.5rem", height: "3.5rem" }}
-                          >
-                            <CheckIcon />
-                          </IconButton>
-                          <IconButton
-                            aria-label="add"
-                            onClick={() => {
-                              setIsAddingQuestion(false);
-                              setCreatedQuestion("");
-                            }}
-                            color="warning"
-                            sx={{ width: "3.5rem", height: "3.5rem" }}
-                          >
-                            <CloseIcon />
-                          </IconButton>
-                        </Box>
-                      </Collapse>
-                      <Collapse in={!isAddingQuestion}>
-                        <Box
-                          sx={{
-                            display: "flex",
-                            justifyContent: "center",
-                            alignItems: "center",
-                          }}
-                        >
-                          <IconButton
-                            aria-label="add"
-                            size="large"
-                            onClick={() => {
-                              setIsAddingQuestion(true);
-                            }}
-                          >
-                            <AddIcon />
-                          </IconButton>
-                        </Box>
-                      </Collapse>
+                      <QAndA
+                        comments={schedule.comments ?? []}
+                        scheduleId={schedule.id}
+                        onCommentCreate={(text) => {
+                          console.log(text);
+                          handleCommentCreate(schedule.id, text);
+                        }}
+                      />
                     </StepContent>
                   </Step>
                 );

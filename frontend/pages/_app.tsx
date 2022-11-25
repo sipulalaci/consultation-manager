@@ -1,19 +1,13 @@
 import "../styles/globals.css";
+import "react-toastify/dist/ReactToastify.css";
+
 import type { AppProps } from "next/app";
-import {
-  AppBar,
-  Box,
-  Button,
-  IconButton,
-  Toolbar,
-  Typography,
-} from "@mui/material";
+import { AppBar, Box, IconButton, Toolbar, Typography } from "@mui/material";
 import { GlobalStyle } from "../styles/GlobalStyle";
 import { getFromStorage } from "../utils/localStorageHelpers";
 import { useEffect } from "react";
 import { useRouter } from "next/router";
 import { ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
 import { UserContext } from "../contexts/UserContext";
 import LogoutIcon from "@mui/icons-material/Logout";
 
