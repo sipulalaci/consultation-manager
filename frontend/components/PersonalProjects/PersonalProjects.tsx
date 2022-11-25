@@ -1,47 +1,102 @@
 import { Box, Card, CardContent, Grid, Typography } from "@mui/material";
-import React from "react";
+import { AxiosError } from "axios";
+import { Router, useRouter } from "next/router";
+import React, { useContext, useEffect, useState } from "react";
+import { toast } from "react-toastify";
+import { getPersonalProjects } from "../../api/api";
+import { Context } from "../../contexts/UserContext";
+import { Project } from "../Projects/Projects";
 
-const projects = [
-  {
-    id: 1,
-    title: "Project 1",
-    description: "This is the first project",
-    teacherId: 1,
-    createdAt: "2021-09-01T00:00:00.000Z",
-    capacity: 4,
+export interface PersonalProject {
+  id: string;
+  studentId: string;
+  projectId: string;
+  createdAt: string;
+  project: Project & { teacher: { id: string; name: string } };
+  status: keyof typeof PersonalProjectStatusEnum;
+  student: { name: string };
+}
+
+export enum PersonalProjectStatusEnum {
+  PENDING = "PENDING",
+  APPROVED = "APPROVED",
+  REJECTED = "REJECTED",
+  FAILED = "FAILED",
+  DONE = "DONE",
+}
+
+export const personalProjectStatues = {
+  [PersonalProjectStatusEnum.PENDING]: {
+    value: "Pending",
+    color: "#CCCC00",
   },
-  {
-    id: 2,
-    title: "Project 2",
-    description: "This is the second project",
-    teacherId: 1,
-    createdAt: "2021-09-01T00:00:00.000Z",
-    capacity: 4,
+  [PersonalProjectStatusEnum.APPROVED]: {
+    value: "Approved",
+    color: "blue",
   },
-  {
-    id: 3,
-    title: "Project 3",
-    description: "This is the third project",
-    teacherId: 1,
-    createdAt: "2021-09-01T00:00:00.000Z",
-    capacity: 4,
+  [PersonalProjectStatusEnum.REJECTED]: {
+    value: "Rejected",
+    color: "darkred",
   },
-];
+  [PersonalProjectStatusEnum.FAILED]: {
+    value: "Failed",
+    color: "velvet",
+  },
+  [PersonalProjectStatusEnum.DONE]: {
+    value: "Done",
+    color: "green",
+  },
+};
 
 export const PersonalProjects = () => {
+  const context = useContext(Context);
+  const router = useRouter();
+  const [personalProjects, setPersonalProjects] = useState<PersonalProject[]>(
+    []
+  );
+
+  useEffect(() => {
+    if (context && context.user && !personalProjects.length) {
+      getPersonalProjects()
+        .then((response) => {
+          console.log({ response });
+          setPersonalProjects(response);
+        })
+        .catch((error) => toast.error((error as AxiosError).message));
+    }
+  }, [context]);
+
   return (
     <Box sx={{ p: 2 }}>
-      <Typography variant="h5" color="inherit" component="div">
+      <Typography variant="h5" color="inherit" component="div" mb={2}>
         Personal projects
       </Typography>
       <Grid container spacing={2}>
-        {projects.map((project) => (
-          <Grid item xs={12} key={project.id}>
-            <Card sx={{ cursor: "pointer" }} onClick={console.log}>
+        {personalProjects.map(({ id, project, status, student }) => (
+          <Grid item xs={12} key={id}>
+            <Card
+              sx={{ cursor: "pointer" }}
+              onClick={() => router.push(`/personal-projects/${id}`)}
+            >
               <CardContent>
                 <Typography variant="h5" component="div">
                   {project.title}
                 </Typography>
+                <Typography
+                  component="div"
+                  color={personalProjectStatues[status].color}
+                >
+                  {personalProjectStatues[status].value}
+                </Typography>
+
+                <Box>
+                  <Typography component="span" fontWeight={600}>
+                    {context?.isStudent ? "Teacher" : "Student"}:
+                  </Typography>
+                  <Typography component="span">
+                    {context?.isStudent ? project.teacher.name : student.name}
+                  </Typography>
+                </Box>
 
                 <Typography variant="body2">{project.description}</Typography>
               </CardContent>

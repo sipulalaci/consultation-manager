@@ -23,4 +23,16 @@ export class ScheduleController {
 
     return schedule;
   }
+
+  @Post(':id/add-task')
+  async addTaskToSchedule(
+    @Param('id') id: string,
+    @Body() newTask: { description: string },
+  ) {
+    const schedule = await this.prisma.task.create({
+      data: { ...newTask, scheduleId: id, isDone: false },
+    });
+
+    return schedule;
+  }
 }

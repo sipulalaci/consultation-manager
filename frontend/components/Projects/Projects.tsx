@@ -11,45 +11,96 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { ProjectModal } from "../ProjectModal/ProjectModal";
 
 import FilterAltIcon from "@mui/icons-material/FilterAlt";
 import FilterAltOffIcon from "@mui/icons-material/FilterAltOff";
-import { getProjects } from "../../api/api";
-import { orderBy } from "lodash";
+import { getProjects, postPersonalProject } from "../../api/api";
+import { orderBy, uniqBy } from "lodash";
+import { Context, UserEnum } from "../../contexts/UserContext";
+import { ConfirmationModal } from "../ConfirmationModal/ConfirmationModal";
+import { toast } from "react-toastify";
+import { useRouter } from "next/router";
+import { AxiosError } from "axios";
+
+export interface Project {
+  id: string;
+  title: string;
+  description: string;
+  teacherId: string;
+  createdAt: string;
+  capacity: number;
+  personalProjectsCount: number;
+  teacher: {
+    id: string;
+    name: string;
+  };
+}
 
 export const Projects = () => {
-  const [projects, setProjects] = useState<
-    {
-      id: number;
-      title: string;
-      description: string;
-      teacherId: string;
-      createdAt: string;
-      capacity: number;
-      personalProjectsCount: number;
-      teacher: {
-        id: string;
-        name: string;
-      };
-    }[]
-  >([]);
+  const context = useContext(Context);
+  const router = useRouter();
+  const [projects, setProjects] = useState<Project[]>([]);
   const [teachers, setTeachers] = useState<{ id: string; name: string }[]>([]);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [teacherFilter, setTeacherFilter] = useState("");
   const [textFilter, setTextFilter] = useState("");
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const handleSignup = async () => {
+    if (!context?.user || !selectedProject) return;
+
+    try {
+      await postPersonalProject({
+        projectId: selectedProject.id,
+        studentId: context.user.id,
+      });
+
+      router.reload();
+    } catch (e) {
+      toast.error((e as AxiosError).message);
+    }
+  };
+
+  const handleCancel = () => {
+    setSelectedProject(null);
+    setIsModalOpen(false);
+  };
 
   useEffect(() => {
     (async () => {
       const response = await getProjects();
       setProjects(response);
-      setTeachers(response.map((project) => project.teacher));
+      setTeachers(
+        uniqBy(
+          response.map((project) => project.teacher),
+          "id"
+        )
+      );
     })();
   }, []);
 
+  useEffect(() => {
+    if (
+      context &&
+      context.user &&
+      context.user.type === UserEnum.STUDENT &&
+      selectedProject
+    ) {
+      setIsModalOpen(true);
+    }
+  }, [selectedProject]);
+
   return (
     <Box sx={{ p: 2 }}>
+      <ConfirmationModal
+        description={`Are you sure you want to sign up for ${selectedProject?.title}?`}
+        isOpen={isModalOpen}
+        onCancel={handleCancel}
+        onConfirm={handleSignup}
+      />
       <Box sx={{ display: "flex", justifyContent: "space-between" }}>
         <Typography variant="h5" color="inherit" component="div">
           Projects
@@ -65,13 +116,15 @@ export const Projects = () => {
               <FilterAltOffIcon />
             </IconButton>
           )}
-          <ProjectModal
-            onSuccess={(newProj) =>
-              setProjects((currentState) =>
-                orderBy([...currentState, newProj], "title")
-              )
-            }
-          />
+          {context?.isTeacher && (
+            <ProjectModal
+              onSuccess={(newProj) =>
+                setProjects((currentState) =>
+                  orderBy([...currentState, newProj], "title")
+                )
+              }
+            />
+          )}
         </Box>
       </Box>
       <Collapse in={!isFilterOpen}>
@@ -93,7 +146,9 @@ export const Projects = () => {
             sx={{ width: "50%" }}
           >
             {teachers.map((teacher) => (
-              <MenuItem value={teacher.id}>{teacher.name}</MenuItem>
+              <MenuItem value={teacher.id} key={teacher.id}>
+                {teacher.name}
+              </MenuItem>
             ))}
           </TextField>
         </Box>
@@ -133,9 +188,17 @@ export const Projects = () => {
 
                   <Typography variant="body2">{project.description}</Typography>
                 </CardContent>
-                <CardActions>
-                  <Button size="small">Sign up</Button>
-                </CardActions>
+                {context?.isStudent &&
+                  project.personalProjectsCount < project.capacity && (
+                    <CardActions>
+                      <Button
+                        size="small"
+                        onClick={() => setSelectedProject(project)}
+                      >
+                        Sign up
+                      </Button>
+                    </CardActions>
+                  )}
               </Card>
             </Grid>
           ))}

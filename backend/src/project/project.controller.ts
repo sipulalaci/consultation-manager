@@ -6,16 +6,19 @@ import {
   Param,
   Put,
   Delete,
+  UseGuards,
 } from '@nestjs/common';
+import { PersonalProjectStatus } from '@prisma/client';
 import { PrismaService } from 'prisma/prisma.service';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 
 @Controller('projects')
 export class ProjectController {
   constructor(private readonly prisma: PrismaService) {}
 
+  @UseGuards(JwtAuthGuard)
   @Post()
   async createProject(@Body() newProject: any) {
-    console.log('newProject', newProject);
     const project = await this.prisma.project.create({ data: newProject });
     return project;
   }
@@ -32,7 +35,15 @@ export class ProjectController {
   async getProjects() {
     const projects = await this.prisma.project.findMany({
       include: {
-        personalProjects: true,
+        personalProjects: {
+          where: {
+            status:
+              PersonalProjectStatus.PENDING ||
+              PersonalProjectStatus.APPROVED ||
+              PersonalProjectStatus.FAILED ||
+              PersonalProjectStatus.DONE,
+          },
+        },
         teacher: {
           select: {
             id: true,

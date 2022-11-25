@@ -32,9 +32,8 @@ model User {
   personalProjects PersonalProject[]
   consultations    Consultation[]
   questions        Comment[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
 }
 
 model Project {
@@ -45,9 +44,8 @@ model Project {
   teacherId        String
   teacher          User              @relation(fields: [teacherId], references: [id])
   personalProjects PersonalProject[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
 }
 
 model PersonalProject {
@@ -59,9 +57,8 @@ model PersonalProject {
   student       User                  @relation(fields: [studentId], references: [id])
   consultations Consultation[]
   schedules     Schedule[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt     DateTime              @default(now())
+  updatedAt     DateTime              @updatedAt
 }
 
 model Consultation {
@@ -70,9 +67,8 @@ model Consultation {
   personalProjectId String?
   personalProject   PersonalProject? @relation(fields: [personalProjectId], references: [id])
   date              DateTime
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
 }
 
 model Schedule {
@@ -82,9 +78,9 @@ model Schedule {
   deadline          DateTime
   description       String
   comments          Comment[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  tasks             Task[]
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
 }
 
 model Comment {
@@ -94,7 +90,16 @@ model Comment {
   user       User     @relation(fields: [userId], references: [id])
   scheduleId String
   schedule   Schedule @relation(fields: [scheduleId], references: [id])
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+model Task {
+  id          String   @id @default(uuid())
+  description String
+  isDone      Boolean
+  scheduleId  String
+  schedule    Schedule @relation(fields: [scheduleId], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }

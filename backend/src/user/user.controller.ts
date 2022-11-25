@@ -2,17 +2,37 @@ import {
   Body,
   Controller,
   Get,
+  Headers,
   Param,
   Post,
   Put,
+  UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../../prisma/prisma.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { User } from '../auth/jwt.decorator';
 
 @Controller('users')
 export class UserController {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly jwtService: JwtService,
+  ) {}
+
+  @UseGuards(JwtAuthGuard)
+  @Get('me')
+  async getMe(@Headers('Authorization') authorization: string) {
+    const token = authorization.replace('Bearer ', '');
+    const { sub } = await this.jwtService.verifyAsync(token);
+    const user = await this.prisma.user.findUnique({ where: { id: sub } });
+    if (!user) {
+      throw new UnauthorizedException();
+    }
+    const { password, ...rest } = user;
+    return rest;
+  }
 
   @Post()
   async createUser(@Body() newUser: any) {

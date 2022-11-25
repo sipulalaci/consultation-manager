@@ -10,7 +10,7 @@ import {
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { addMinutes, format } from "date-fns";
 import { ConsultationModal } from "../ConsultationModal/ConsultationModal";
-import { useEffect, useState } from "react";
+import { useEffect, useState, Fragment } from "react";
 import { ConfirmationModal } from "../ConfirmationModal/ConfirmationModal";
 
 const consultationsByDate = {
@@ -95,7 +95,7 @@ export const Consultations = () => {
           <ConsultationModal />
         </Box>
         {Object.entries(consultationsByDate).map(([key, value]) => (
-          <>
+          <Fragment key={key}>
             <Accordion>
               <AccordionSummary
                 expandIcon={<ExpandMoreIcon />}
@@ -106,7 +106,7 @@ export const Consultations = () => {
               <AccordionDetails>
                 <Grid container spacing={2}>
                   {value.map((consultation) => (
-                    <Grid item>
+                    <Grid item key={consultation.id}>
                       <Button
                         variant="outlined"
                         onClick={() => setSelectedConsultation(consultation)}
@@ -124,7 +124,7 @@ export const Consultations = () => {
                 </Grid>
               </AccordionDetails>
             </Accordion>
-          </>
+          </Fragment>
         ))}
       </Box>
     </>

@@ -10,24 +10,41 @@ import {
 } from "@mui/material";
 import { useState } from "react";
 import AddIcon from "@mui/icons-material/Add";
-
+import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { style } from "../../consts/ModalStyle";
 import { Formik } from "formik";
+import { LocalizationProvider } from "@mui/x-date-pickers";
+import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
+import { getDate, getMonth, getYear } from "date-fns";
 
 export const ConsultationModal = () => {
   const [isOpen, setIsOpen] = useState(false);
 
+  const handleCreate = (values) => {
+    const consultation = {
+      date: new Date(
+        getYear(values.date),
+        getMonth(values.date),
+        getDate(values.date),
+        values.hour,
+        values.minute
+      ),
+    };
+    console.log(consultation);
+  };
+
   return (
-    <>
+    <LocalizationProvider dateAdapter={AdapterDateFns}>
       <IconButton aria-label="add" onClick={() => setIsOpen(true)}>
         <AddIcon />
       </IconButton>
       <Formik
         initialValues={{
+          date: "",
           hour: "",
           minute: "",
         }}
-        onSubmit={(values) => console.log(values)}
+        onSubmit={(values) => handleCreate(values)}
       >
         {({ values, errors, handleSubmit, setFieldValue }) => (
           <Modal open={isOpen} onClose={() => setIsOpen(false)}>
@@ -38,9 +55,19 @@ export const ConsultationModal = () => {
                 variant="h6"
                 component="h2"
               >
-                Add new project
+                Add new consultation
               </Typography>
               <Grid container spacing={2}>
+                <Grid item xs={12}>
+                  <DatePicker
+                    value={values.date}
+                    onChange={(value) => setFieldValue("date", value)}
+                    inputFormat="yyyy/MM/dd"
+                    renderInput={(params) => (
+                      <TextField {...params} fullWidth autoFocus />
+                    )}
+                  ></DatePicker>
+                </Grid>
                 <Grid item xs={6}>
                   <TextField
                     id="demo-simple-select"
@@ -53,7 +80,9 @@ export const ConsultationModal = () => {
                     fullWidth
                   >
                     {Array.from(new Array(24)).map((_, index) => (
-                      <MenuItem value={index}>{index}</MenuItem>
+                      <MenuItem value={index} key={index}>
+                        {index}
+                      </MenuItem>
                     ))}
                   </TextField>
                 </Grid>
@@ -69,7 +98,9 @@ export const ConsultationModal = () => {
                     fullWidth
                   >
                     {[0, 15, 30, 45].map((name) => (
-                      <MenuItem value={name}>{name}</MenuItem>
+                      <MenuItem value={name} key={name}>
+                        {name}
+                      </MenuItem>
                     ))}
                   </TextField>
                 </Grid>
@@ -101,6 +132,6 @@ export const ConsultationModal = () => {
           </Modal>
         )}
       </Formik>
-    </>
+    </LocalizationProvider>
   );
 };

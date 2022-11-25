@@ -13,9 +13,12 @@ import { saveToStorage } from "../../utils/localStorageHelpers";
 import { useFormik } from "formik";
 import { toast } from "react-toastify";
 import { useRouter } from "next/router";
+import { useContext } from "react";
+import { Context } from "../../contexts/UserContext";
 
 export const Login = () => {
   const router = useRouter();
+  const context = useContext(Context);
 
   const { values, handleChange, handleSubmit } = useFormik({
     initialValues: {
@@ -36,6 +39,8 @@ export const Login = () => {
       console.log({ response });
 
       saveToStorage("token", response["access_token"]);
+      context?.setUser(response.user);
+
       router.replace("/");
     } catch (e) {
       console.log({ e });
