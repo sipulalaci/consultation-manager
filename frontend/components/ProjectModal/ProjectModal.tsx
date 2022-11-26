@@ -8,7 +8,7 @@ import {
   Typography,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { style } from "../../consts/ModalStyle";
 import { useFormik } from "formik";
 import { postProject } from "../../api/api";
@@ -17,7 +17,13 @@ import { toast } from "react-toastify";
 import { Context } from "../../contexts/UserContext";
 import { blockInvalidNumberInputChar } from "../../utils/blockInvalidNumberInputChar";
 
-export const ProjectModal = ({ onSuccess }) => {
+interface Props {
+  onSuccess: (response) => void;
+  onCancel?: () => void;
+  forceOpen?: boolean;
+}
+
+export const ProjectModal = ({ onSuccess, onCancel, forceOpen }: Props) => {
   const [isOpen, setIsOpen] = useState(false);
   const context = useContext(Context);
 
@@ -53,7 +59,12 @@ export const ProjectModal = ({ onSuccess }) => {
   const handleCancel = () => {
     resetForm();
     setIsOpen(false);
+    onCancel && onCancel();
   };
+
+  useEffect(() => {
+    if (forceOpen) setIsOpen(true);
+  }, [forceOpen]);
 
   return (
     <>

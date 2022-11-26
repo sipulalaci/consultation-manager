@@ -9,6 +9,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { PersonalProjectStatus } from '@prisma/client';
 import { NotFoundError } from '@prisma/client/runtime';
 import { PrismaService } from 'prisma/prisma.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
@@ -28,7 +29,7 @@ export class PersonalProjectController {
     const personalProject = await this.prisma.personalProject.create({
       data: {
         ...newPersonalProject,
-        status: 'PENDING',
+        status: PersonalProjectStatus.PENDING,
       },
     });
     return personalProject;

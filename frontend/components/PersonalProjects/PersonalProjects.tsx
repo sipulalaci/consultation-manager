@@ -4,6 +4,8 @@ import {
   CardContent,
   CircularProgress,
   Grid,
+  MenuItem,
+  TextField,
   Typography,
 } from "@mui/material";
 import { AxiosError } from "axios";
@@ -11,7 +13,7 @@ import Link from "next/link";
 import { Router, useRouter } from "next/router";
 import React, { useContext, useEffect, useState } from "react";
 import { toast } from "react-toastify";
-import { getPersonalProjects } from "../../api/api";
+import { getPersonalProjects, putPersonalProject } from "../../api/api";
 import { Context } from "../../contexts/UserContext";
 import { Project } from "../Projects/Projects";
 
@@ -21,9 +23,11 @@ export interface PersonalProject {
   projectId: string;
   createdAt: string;
   project: Project & { teacher: { id: string; name: string } };
-  status: keyof typeof PersonalProjectStatusEnum;
+  status: PersonalProjectStatus;
   student: { name: string };
 }
+
+export type PersonalProjectStatus = keyof typeof PersonalProjectStatusEnum;
 
 export enum PersonalProjectStatusEnum {
   PENDING = "PENDING",
@@ -32,6 +36,16 @@ export enum PersonalProjectStatusEnum {
   FAILED = "FAILED",
   DONE = "DONE",
 }
+
+export const isActiveProject = (status: PersonalProjectStatus) =>
+  [
+    PersonalProjectStatusEnum.APPROVED,
+    PersonalProjectStatusEnum.DONE,
+    PersonalProjectStatusEnum.FAILED,
+  ].includes(PersonalProjectStatusEnum[status]);
+
+export const canBeEdited = (status: PersonalProjectStatus) =>
+  status === PersonalProjectStatusEnum.APPROVED;
 
 export const personalProjectStatues = {
   [PersonalProjectStatusEnum.PENDING]: {
@@ -63,6 +77,28 @@ export const PersonalProjects = () => {
     PersonalProject[] | null
   >([]);
 
+  const handleStatusChange = async (
+    id: string,
+    status: PersonalProjectStatus
+  ) => {
+    if (!context?.isTeacher) return;
+
+    try {
+      const res = (await putPersonalProject(id, { status })) as PersonalProject;
+      setPersonalProjects((currentState) =>
+        currentState
+          ? currentState.map((personalProject) =>
+              personalProject.id === res.id
+                ? { ...personalProject, ...res }
+                : personalProject
+            )
+          : null
+      );
+    } catch (e) {
+      toast.error((e as AxiosError).message);
+    }
+  };
+
   useEffect(() => {
     if (
       context &&
@@ -88,13 +124,47 @@ export const PersonalProjects = () => {
           personalProjects.map(({ id, project, status, student }) => (
             <Grid item xs={12} key={id}>
               <Card
-                sx={{ cursor: "pointer" }}
-                onClick={() => router.push(`/personal-projects/${id}`)}
+                {...((isActiveProject(status) || context?.isTeacher) && {
+                  sx: { cursor: "pointer" },
+                  onClick: () => router.push(`/personal-projects/${id}`),
+                })}
               >
                 <CardContent>
-                  <Typography variant="h5" component="div">
-                    {project.title}
-                  </Typography>
+                  <Box
+                    sx={{ display: "flex", justifyContent: "space-between" }}
+                  >
+                    <Typography variant="h5" component="div">
+                      {project.title}
+                    </Typography>
+                    {context?.isTeacher && (
+                      <TextField
+                        id="status-select"
+                        select
+                        value={status}
+                        label="Status"
+                        onClick={(e) => e.stopPropagation()}
+                        onChange={(e) =>
+                          handleStatusChange(
+                            id,
+                            e.target.value as PersonalProjectStatus
+                          )
+                        }
+                        sx={{ width: "8rem" }}
+                      >
+                        {Object.entries(personalProjectStatues).map(
+                          ([key, value]) => (
+                            <MenuItem
+                              value={key}
+                              key={key}
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              {value.value}
+                            </MenuItem>
+                          )
+                        )}
+                      </TextField>
+                    )}
+                  </Box>
                   <Typography
                     component="div"
                     color={personalProjectStatues[status].color}

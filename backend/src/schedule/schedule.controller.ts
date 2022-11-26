@@ -18,6 +18,9 @@ export class ScheduleController {
   async createSchedule(@Body() newSchedule: any) {
     const schedule = await this.prisma.schedule.create({
       data: newSchedule,
+      include: {
+        tasks: true,
+      },
     });
     return schedule;
   }

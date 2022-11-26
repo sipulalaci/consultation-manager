@@ -13,6 +13,7 @@ import {
 import AddIcon from "@mui/icons-material/Add";
 import { Formik } from "formik";
 import { style } from "../../consts/ModalStyle";
+import { addDays } from "date-fns";
 
 interface Props {
   showButton?: boolean;
@@ -47,7 +48,10 @@ export const ScheduleModal = ({
           deadline: "",
           description: "",
         }}
-        onSubmit={(values) => onSuccess(values)}
+        onSubmit={(values) => {
+          onSuccess(values);
+          setIsOpen(false);
+        }}
       >
         {({ values, errors, handleSubmit, resetForm, setFieldValue }) => (
           <Modal open={isOpen} onClose={() => setIsOpen(false)}>
@@ -66,6 +70,7 @@ export const ScheduleModal = ({
                     value={values.deadline}
                     onChange={(value) => setFieldValue("deadline", value)}
                     inputFormat="yyyy/MM/dd"
+                    minDate={addDays(new Date(), 1)}
                     renderInput={(params) => (
                       <TextField {...params} fullWidth autoFocus />
                     )}

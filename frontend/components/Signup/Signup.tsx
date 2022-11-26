@@ -131,10 +131,10 @@ export const SignUp = () => {
                 </Grid>
                 <Grid item xs={12}>
                   <FormControl fullWidth>
-                    <InputLabel id="demo-simple-select-label">Role</InputLabel>
+                    <InputLabel id="role-select-label">Role</InputLabel>
                     <Select
-                      labelId="demo-simple-select-label"
-                      id="demo-simple-select"
+                      labelId="role-select-label"
+                      id="role-select"
                       value={values.role}
                       label="Role"
                       onChange={(e) => setFieldValue("role", e.target.value)}

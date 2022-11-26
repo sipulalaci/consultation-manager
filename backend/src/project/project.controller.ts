@@ -40,11 +40,12 @@ export class ProjectController {
       include: {
         personalProjects: {
           where: {
-            status:
-              PersonalProjectStatus.PENDING ||
-              PersonalProjectStatus.APPROVED ||
-              PersonalProjectStatus.FAILED ||
-              PersonalProjectStatus.DONE,
+            OR: [
+              { status: PersonalProjectStatus.PENDING },
+              { status: PersonalProjectStatus.APPROVED },
+              { status: PersonalProjectStatus.FAILED },
+              { status: PersonalProjectStatus.DONE },
+            ],
           },
         },
         teacher: {

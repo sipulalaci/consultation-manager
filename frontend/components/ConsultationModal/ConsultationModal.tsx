@@ -69,7 +69,7 @@ export const ConsultationModal = () => {
                 </Grid>
                 <Grid item xs={6}>
                   <TextField
-                    id="demo-simple-select"
+                    id="hour-select"
                     select
                     name="hour"
                     error={!!errors.hour}
@@ -87,7 +87,7 @@ export const ConsultationModal = () => {
                 </Grid>
                 <Grid item xs={6}>
                   <TextField
-                    id="demo-simple-select"
+                    id="minute-select"
                     select
                     name="minute"
                     error={!!errors.minute}

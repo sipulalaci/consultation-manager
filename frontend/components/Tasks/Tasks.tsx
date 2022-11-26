@@ -16,11 +16,17 @@ import CheckIcon from "@mui/icons-material/Check";
 
 interface Props {
   tasks: Task[];
+  canBeEdited: boolean;
   onTaskCreate: (text: string) => void;
   onTaskToggle: (id: string) => void;
 }
 
-export const Tasks = ({ tasks, onTaskCreate, onTaskToggle }: Props) => {
+export const Tasks = ({
+  tasks,
+  canBeEdited,
+  onTaskCreate,
+  onTaskToggle,
+}: Props) => {
   const [isAddingTask, setIsAddingTask] = useState(false);
   const [taskText, setTaskText] = useState<string>("");
 
@@ -35,6 +41,7 @@ export const Tasks = ({ tasks, onTaskCreate, onTaskToggle }: Props) => {
               control={
                 <Checkbox
                   checked={task.isDone}
+                  disabled={!canBeEdited}
                   onClick={() => onTaskToggle(task.id)}
                 />
               }
@@ -46,63 +53,67 @@ export const Tasks = ({ tasks, onTaskCreate, onTaskToggle }: Props) => {
           There are no tasks for this element, please add one.
         </Typography>
       )}
-      <Collapse in={isAddingTask}>
-        <Box sx={{ display: "flex" }}>
-          <TextField
-            label="Description"
-            name="description"
-            variant="outlined"
-            value={taskText}
-            onChange={(e) => setTaskText(e.target.value)}
-            sx={{ width: "100%" }}
-          />
-          <IconButton
-            aria-label="add"
-            onClick={() => {
-              if (taskText !== "") {
-                onTaskCreate(taskText);
-                setTaskText("");
-                setIsAddingTask(false);
-              }
-            }}
-            color="success"
-            sx={{ width: "3.5rem", height: "3.5rem" }}
-            disabled={taskText === ""}
-          >
-            <CheckIcon />
-          </IconButton>
-          <IconButton
-            aria-label="add"
-            onClick={() => {
-              setIsAddingTask(false);
-              setTaskText("");
-            }}
-            color="warning"
-            sx={{ width: "3.5rem", height: "3.5rem" }}
-          >
-            <CloseIcon />
-          </IconButton>
-        </Box>
-      </Collapse>
-      <Collapse in={!isAddingTask}>
-        <Box
-          sx={{
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-          }}
-        >
-          <IconButton
-            aria-label="add"
-            size="large"
-            onClick={() => {
-              setIsAddingTask(true);
-            }}
-          >
-            <AddIcon />
-          </IconButton>
-        </Box>
-      </Collapse>
+      {canBeEdited && (
+        <>
+          <Collapse in={isAddingTask}>
+            <Box sx={{ display: "flex" }}>
+              <TextField
+                label="Description"
+                name="description"
+                variant="outlined"
+                value={taskText}
+                onChange={(e) => setTaskText(e.target.value)}
+                sx={{ width: "100%" }}
+              />
+              <IconButton
+                aria-label="add"
+                onClick={() => {
+                  if (taskText !== "") {
+                    onTaskCreate(taskText);
+                    setTaskText("");
+                    setIsAddingTask(false);
+                  }
+                }}
+                color="success"
+                sx={{ width: "3.5rem", height: "3.5rem" }}
+                disabled={taskText === ""}
+              >
+                <CheckIcon />
+              </IconButton>
+              <IconButton
+                aria-label="add"
+                onClick={() => {
+                  setIsAddingTask(false);
+                  setTaskText("");
+                }}
+                color="warning"
+                sx={{ width: "3.5rem", height: "3.5rem" }}
+              >
+                <CloseIcon />
+              </IconButton>
+            </Box>
+          </Collapse>
+          <Collapse in={!isAddingTask}>
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+            >
+              <IconButton
+                aria-label="add"
+                size="large"
+                onClick={() => {
+                  setIsAddingTask(true);
+                }}
+              >
+                <AddIcon />
+              </IconButton>
+            </Box>
+          </Collapse>
+        </>
+      )}
     </>
   );
 };

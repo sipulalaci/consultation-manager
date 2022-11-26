@@ -7,13 +7,11 @@ import {
   Post,
   Put,
   UnauthorizedException,
-  UseGuards,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { PersonalProjectStatus } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard';
-import { Protected, User } from '../auth/jwt.decorator';
+import { Protected } from '../auth/jwt.decorator';
 
 @Controller('users')
 export class UserController {
@@ -32,8 +30,10 @@ export class UserController {
       include: {
         personalProjects: {
           where: {
-            status:
-              PersonalProjectStatus.PENDING || PersonalProjectStatus.PENDING,
+            OR: [
+              { status: PersonalProjectStatus.PENDING },
+              { status: PersonalProjectStatus.APPROVED },
+            ],
           },
         },
       },

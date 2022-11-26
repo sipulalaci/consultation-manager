@@ -1,5 +1,6 @@
 import { createContext, ReactNode, useEffect, useState } from "react";
 import { getMe } from "../api/api";
+import { PersonalProject } from "../components/PersonalProjects/PersonalProjects";
 import { User, UserEnum } from "../types/User";
 import {
   getFromStorage,
@@ -11,16 +12,24 @@ interface UserContextProps {
 }
 
 export const Context = createContext<{
-  user: User | null;
-  setUser: (user: User | null) => void;
+  user: (User & { personalProjects: PersonalProject[] }) | null;
+  setUser: (
+    user: (User & { personalProjects: PersonalProject[] }) | null
+  ) => void;
   isTeacher: boolean;
   isStudent: boolean;
+  hasActivePersonalProject: boolean;
 } | null>(null);
 
 export const UserContext = ({ children }: UserContextProps) => {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<
+    (User & { personalProjects: PersonalProject[] }) | null
+  >(null);
   const isTeacher = user?.type === UserEnum.TEACHER;
   const isStudent = user?.type === UserEnum.STUDENT;
+  const hasActivePersonalProject = user?.personalProjects
+    ? user?.personalProjects?.length > 0
+    : false;
 
   useEffect(() => {
     if (!user) {
@@ -42,6 +51,7 @@ export const UserContext = ({ children }: UserContextProps) => {
     setUser,
     isTeacher,
     isStudent,
+    hasActivePersonalProject,
   };
 
   return <Context.Provider value={context}>{children}</Context.Provider>;

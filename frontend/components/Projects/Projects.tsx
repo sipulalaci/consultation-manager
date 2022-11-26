@@ -49,6 +49,7 @@ export const Projects = () => {
   const [textFilter, setTextFilter] = useState("");
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [shouldForceModalOpen, setShouldForceModalOpen] = useState(false);
 
   const handleSignup = async () => {
     if (!context?.user || !selectedProject) return;
@@ -108,17 +109,19 @@ export const Projects = () => {
         </Typography>
 
         <Box>
-          {isFilterOpen ? (
-            <IconButton aria-label="add" onClick={() => setIsFilterOpen(false)}>
+          {!isFilterOpen ? (
+            <IconButton onClick={() => setIsFilterOpen((current) => !current)}>
               <FilterAltIcon />
             </IconButton>
           ) : (
-            <IconButton aria-label="add" onClick={() => setIsFilterOpen(true)}>
+            <IconButton onClick={() => setIsFilterOpen((current) => !current)}>
               <FilterAltOffIcon />
             </IconButton>
           )}
           {context?.isTeacher && (
             <ProjectModal
+              forceOpen={shouldForceModalOpen}
+              onCancel={() => setShouldForceModalOpen(false)}
               onSuccess={(newProj) =>
                 setProjects((currentState) =>
                   orderBy([...currentState, newProj], "title")
@@ -128,7 +131,7 @@ export const Projects = () => {
           )}
         </Box>
       </Box>
-      <Collapse in={!isFilterOpen}>
+      <Collapse in={isFilterOpen}>
         <Box sx={{ mt: 1, mb: 3, display: "flex", gap: 2 }}>
           <TextField
             id="title"
@@ -139,7 +142,7 @@ export const Projects = () => {
             sx={{ width: "50%" }}
           />
           <TextField
-            id="demo-simple-select"
+            id="teacher-select"
             select
             value={teacherFilter}
             label="Teacher"
@@ -155,54 +158,91 @@ export const Projects = () => {
         </Box>
       </Collapse>
       <Grid container spacing={2}>
-        {projects
-          ?.filter((project) => {
-            if (!textFilter && !teacherFilter) return true;
-            if (textFilter && !teacherFilter)
-              return project.title
-                .toLowerCase()
-                .includes(textFilter.toLowerCase());
-            if (!textFilter && teacherFilter)
-              return project.teacherId === teacherFilter;
-            if (textFilter && teacherFilter)
-              return (
-                project.title
+        {projects?.length ? (
+          projects
+            ?.filter((project) => {
+              if (!textFilter && !teacherFilter) return true;
+              if (textFilter && !teacherFilter)
+                return project.title
                   .toLowerCase()
-                  .includes(textFilter.toLowerCase()) &&
-                project.teacherId === teacherFilter
-              );
-          })
-          .map((project) => (
-            <Grid item xs={12} key={project.id}>
-              <Card>
-                <CardContent>
-                  <Typography
-                    sx={{ fontSize: 14 }}
-                    color="text.secondary"
-                    gutterBottom
-                  >
-                    {`${project.personalProjectsCount}/${project.capacity}`}
-                  </Typography>
-                  <Typography variant="h5" component="div">
-                    {project.title}
-                  </Typography>
+                  .includes(textFilter.toLowerCase());
+              if (!textFilter && teacherFilter)
+                return project.teacherId === teacherFilter;
+              if (textFilter && teacherFilter)
+                return (
+                  project.title
+                    .toLowerCase()
+                    .includes(textFilter.toLowerCase()) &&
+                  project.teacherId === teacherFilter
+                );
+            })
+            .map((project) => (
+              <Grid item xs={12} key={project.id}>
+                <Card>
+                  <CardContent>
+                    <Typography
+                      sx={{ fontSize: 14 }}
+                      color="text.secondary"
+                      gutterBottom
+                    >
+                      {`${project.personalProjectsCount}/${project.capacity}`}
+                    </Typography>
+                    <Typography variant="h5" component="div">
+                      {project.title}
+                    </Typography>
 
-                  <Typography variant="body2">{project.description}</Typography>
-                </CardContent>
-                {context?.isStudent &&
-                  project.personalProjectsCount < project.capacity && (
-                    <CardActions>
-                      <Button
-                        size="small"
-                        onClick={() => setSelectedProject(project)}
-                      >
-                        Sign up
-                      </Button>
-                    </CardActions>
-                  )}
-              </Card>
-            </Grid>
-          ))}
+                    <Typography variant="body2">
+                      {project.description}
+                    </Typography>
+                  </CardContent>
+                  {context?.isStudent &&
+                    !context?.hasActivePersonalProject &&
+                    project.personalProjectsCount < project.capacity && (
+                      <CardActions>
+                        <Button
+                          size="small"
+                          onClick={() => setSelectedProject(project)}
+                        >
+                          Sign up
+                        </Button>
+                      </CardActions>
+                    )}
+                </Card>
+              </Grid>
+            ))
+        ) : (
+          <Grid
+            item
+            xs={12}
+            sx={{
+              marginTop: "1rem",
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "center",
+              alignItems: "Center",
+              gap: "1rem",
+            }}
+          >
+            <Typography
+              variant="h6"
+              color="inherit"
+              component="div"
+              sx={{ width: "fit-content" }}
+            >
+              {context?.isTeacher
+                ? "There are no projects to show, add the first one."
+                : "There are no projects to show, ask your teacher to create one."}
+            </Typography>
+            {context?.isTeacher && (
+              <Button
+                variant="contained"
+                onClick={() => setShouldForceModalOpen(true)}
+              >
+                Add project
+              </Button>
+            )}
+          </Grid>
+        )}
       </Grid>
     </Box>
   );
