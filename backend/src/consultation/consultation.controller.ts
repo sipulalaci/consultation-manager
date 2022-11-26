@@ -10,10 +10,14 @@ import {
 import { PersonalProjectStatus } from '@prisma/client';
 import { PrismaService } from 'prisma/prisma.service';
 import { Protected } from '../auth/jwt.decorator';
+import { MailService } from '../mail/mail.service';
 
 @Controller('consultations')
 export class ConsultationController {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private mailService: MailService,
+  ) {}
 
   @Protected()
   @Post()
@@ -107,10 +111,30 @@ export class ConsultationController {
     @Param('id') id: any,
     @Body() updatedConsultation: any,
   ) {
+    const { personalProjectId, studentId } = updatedConsultation;
+
     const consultation = await this.prisma.consultation.update({
       where: { id },
-      data: updatedConsultation,
+      include: {
+        participants: true,
+      },
+      data: {
+        personalProjectId,
+        participants: {
+          connect: {
+            id: studentId,
+          },
+        },
+      },
     });
+    console.log('consultation', consultation);
+    if (consultation.personalProjectId) {
+      await this.mailService.sendUserConfirmation(
+        consultation.participants[0],
+        consultation.participants[1],
+        consultation,
+      );
+    }
 
     return consultation;
   }

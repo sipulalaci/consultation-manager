@@ -53,6 +53,7 @@ export const Consultations = () => {
     try {
       const consultation = await putConsultation(selectedConsultation.id, {
         personalProjectId: context?.user?.personalProjects[0].id,
+        studentId: context?.user?.id,
       });
       setConsultations((consultations) =>
         consultations.filter((c) => c.id !== consultation.id)
