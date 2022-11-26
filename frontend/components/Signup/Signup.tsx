@@ -19,6 +19,7 @@ import { toast } from "react-toastify";
 import { saveToStorage } from "../../utils/localStorageHelpers";
 import { AxiosError } from "axios";
 import { useRouter } from "next/router";
+import { UserEnum } from "../../types/User";
 
 export const SignUp = () => {
   const router = useRouter();
@@ -29,7 +30,7 @@ export const SignUp = () => {
       password: values.password,
       type: values.role,
       name: `${values.firstName} ${values.lastName}`,
-      ...(values.role === "STUDENT"
+      ...(values.role === UserEnum.STUDENT
         ? { neptun: values.identifier }
         : { department: values.identifier }),
     };
@@ -138,8 +139,8 @@ export const SignUp = () => {
                       label="Role"
                       onChange={(e) => setFieldValue("role", e.target.value)}
                     >
-                      <MenuItem value={"STUDENT"}>Student</MenuItem>
-                      <MenuItem value={"TEACHER"}>Teacher</MenuItem>
+                      <MenuItem value={UserEnum.STUDENT}>Student</MenuItem>
+                      <MenuItem value={UserEnum.TEACHER}>Teacher</MenuItem>
                     </Select>
                   </FormControl>
                 </Grid>
@@ -152,7 +153,9 @@ export const SignUp = () => {
                       onChange={handleChange}
                       name="identifier"
                       label={
-                        values.role === "student" ? "Neptun" : "Department"
+                        values.role === UserEnum.STUDENT
+                          ? "Neptun"
+                          : "Department"
                       }
                     />
                   </Grid>

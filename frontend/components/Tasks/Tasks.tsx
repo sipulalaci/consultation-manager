@@ -9,7 +9,7 @@ import {
   Typography,
 } from "@mui/material";
 import React, { useState } from "react";
-import { Task } from "../PersonalProjectDetails/PersonalProjectDetails";
+import { Task } from "../../types/Task";
 import AddIcon from "@mui/icons-material/Add";
 import CloseIcon from "@mui/icons-material/Close";
 import CheckIcon from "@mui/icons-material/Check";

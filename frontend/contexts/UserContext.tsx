@@ -1,21 +1,10 @@
 import { createContext, ReactNode, useEffect, useState } from "react";
 import { getMe } from "../api/api";
+import { User, UserEnum } from "../types/User";
 import {
   getFromStorage,
   removeFromStorage,
 } from "../utils/localStorageHelpers";
-
-export enum UserEnum {
-  STUDENT = "STUDENT",
-  TEACHER = "TEACHER",
-}
-
-export interface User {
-  id: string;
-  name: string;
-  email: string;
-  type: keyof typeof UserEnum;
-}
 
 interface UserContextProps {
   children: ReactNode;

@@ -1,17 +1,12 @@
 import {
   Box,
   Button,
-  Checkbox,
-  Collapse,
   Divider,
-  FormControlLabel,
   IconButton,
-  Paper,
   Step,
   StepContent,
   StepLabel,
   Stepper,
-  TextField,
   Typography,
 } from "@mui/material";
 import { AxiosError } from "axios";
@@ -29,41 +24,13 @@ import { PersonalProject } from "../PersonalProjects/PersonalProjects";
 import { ScheduleModal } from "../ScheduleModal/ScheduleModal";
 import { orderBy } from "lodash";
 import AddIcon from "@mui/icons-material/Add";
-import CheckIcon from "@mui/icons-material/Check";
-import CloseIcon from "@mui/icons-material/Close";
-import { Stack } from "@mui/system";
 import { format } from "date-fns";
-import { Context, User } from "../../contexts/UserContext";
-import { Comment as CommentComponent } from "../Comment/Comment";
+import { Context } from "../../contexts/UserContext";
 import { QAndA } from "../QAndA/QAndA";
 import { Tasks } from "../Tasks/Tasks";
-
-export interface Schedule {
-  id: string;
-  personalProjectId: string;
-  description: string;
-  deadline: Date;
-  createdAt: Date;
-  tasks: Task[];
-  comments: Comment[];
-}
-
-export interface Comment {
-  id: string;
-  scheduleId: string;
-  question: string;
-  userId: string;
-  user: User;
-  createdAt: Date;
-}
-
-export interface Task {
-  id: string;
-  scheduleId: string;
-  description: string;
-  isDone: boolean;
-  createdAt: Date;
-}
+import { Schedule } from "../../types/Schedule";
+import { Comment } from "../../types/Comment";
+import { Task } from "../../types/Task";
 
 export const PersonalProjectDetails = () => {
   const router = useRouter();
@@ -189,7 +156,7 @@ export const PersonalProjectDetails = () => {
       .catch((err) => {
         toast.error((err as AxiosError).message);
       });
-  }, [router]);
+  }, [router, personalProject]);
 
   return (
     <>
@@ -230,48 +197,45 @@ export const PersonalProjectDetails = () => {
 
           {personalProject?.schedules.length ? (
             <Stepper activeStep={activeSchedule} orientation="vertical">
-              {personalProject.schedules.map((schedule, index) => {
-                return (
-                  <Step
-                    key={schedule.id}
-                    onClick={() => setActiveSchedule(index)}
-                  >
-                    <StepLabel sx={{ ":hover": { cursor: "pointer" } }}>
-                      <Typography fontWeight={600}>
-                        {schedule.description}
-                      </Typography>
-                    </StepLabel>
-                    <StepContent>
-                      <Box sx={{ display: "flex", gap: ".5rem" }}>
-                        <Typography fontWeight={600}>Deadline: </Typography>
-                        <Typography>{` ${format(
-                          new Date(schedule.deadline),
-                          "yyyy-MM-dd"
-                        )}`}</Typography>
-                      </Box>
-                      <Divider sx={{ margin: "1rem 0" }} />
-                      <Typography fontWeight={600}>Tasks:</Typography>
+              {personalProject.schedules.map((schedule, index) => (
+                <Step
+                  key={schedule.id}
+                  onClick={() => setActiveSchedule(index)}
+                >
+                  <StepLabel sx={{ ":hover": { cursor: "pointer" } }}>
+                    <Typography fontWeight={600}>
+                      {schedule.description}
+                    </Typography>
+                  </StepLabel>
+                  <StepContent>
+                    <Box sx={{ display: "flex", gap: ".5rem" }}>
+                      <Typography fontWeight={600}>Deadline: </Typography>
+                      <Typography>{` ${format(
+                        new Date(schedule.deadline),
+                        "yyyy-MM-dd"
+                      )}`}</Typography>
+                    </Box>
+                    <Divider sx={{ margin: "1rem 0" }} />
+                    <Typography fontWeight={600}>Tasks:</Typography>
 
-                      <Tasks
-                        tasks={schedule.tasks}
-                        onTaskCreate={(text) =>
-                          handleTaskCreate(schedule.id, text)
-                        }
-                        onTaskToggle={(id) => handleTaskToggle(schedule.id, id)}
-                      />
-                      <Divider sx={{ margin: "1rem 0" }} />
-                      <QAndA
-                        comments={schedule.comments ?? []}
-                        scheduleId={schedule.id}
-                        onCommentCreate={(text) => {
-                          console.log(text);
-                          handleCommentCreate(schedule.id, text);
-                        }}
-                      />
-                    </StepContent>
-                  </Step>
-                );
-              })}
+                    <Tasks
+                      tasks={schedule.tasks}
+                      onTaskCreate={(text) =>
+                        handleTaskCreate(schedule.id, text)
+                      }
+                      onTaskToggle={(id) => handleTaskToggle(schedule.id, id)}
+                    />
+                    <Divider sx={{ margin: "1rem 0" }} />
+                    <QAndA
+                      comments={schedule.comments ?? []}
+                      scheduleId={schedule.id}
+                      onCommentCreate={(text) =>
+                        handleCommentCreate(schedule.id, text)
+                      }
+                    />
+                  </StepContent>
+                </Step>
+              ))}
             </Stepper>
           ) : (
             <Box

@@ -1,5 +1,13 @@
-import { Box, Card, CardContent, Grid, Typography } from "@mui/material";
+import {
+  Box,
+  Card,
+  CardContent,
+  CircularProgress,
+  Grid,
+  Typography,
+} from "@mui/material";
 import { AxiosError } from "axios";
+import Link from "next/link";
 import { Router, useRouter } from "next/router";
 import React, { useContext, useEffect, useState } from "react";
 import { toast } from "react-toastify";
@@ -51,58 +59,88 @@ export const personalProjectStatues = {
 export const PersonalProjects = () => {
   const context = useContext(Context);
   const router = useRouter();
-  const [personalProjects, setPersonalProjects] = useState<PersonalProject[]>(
-    []
-  );
+  const [personalProjects, setPersonalProjects] = useState<
+    PersonalProject[] | null
+  >([]);
 
   useEffect(() => {
-    if (context && context.user && !personalProjects.length) {
+    if (
+      context &&
+      context.user &&
+      personalProjects &&
+      !personalProjects.length
+    ) {
       getPersonalProjects()
         .then((response) => {
           setPersonalProjects(response);
         })
         .catch((error) => toast.error((error as AxiosError).message));
     }
-  }, [context]);
+  }, [context, personalProjects]);
 
-  return (
+  return personalProjects ? (
     <Box sx={{ p: 2 }}>
       <Typography variant="h5" color="inherit" component="div" mb={2}>
         Personal projects
       </Typography>
       <Grid container spacing={2}>
-        {personalProjects.map(({ id, project, status, student }) => (
-          <Grid item xs={12} key={id}>
-            <Card
-              sx={{ cursor: "pointer" }}
-              onClick={() => router.push(`/personal-projects/${id}`)}
+        {personalProjects.length ? (
+          personalProjects.map(({ id, project, status, student }) => (
+            <Grid item xs={12} key={id}>
+              <Card
+                sx={{ cursor: "pointer" }}
+                onClick={() => router.push(`/personal-projects/${id}`)}
+              >
+                <CardContent>
+                  <Typography variant="h5" component="div">
+                    {project.title}
+                  </Typography>
+                  <Typography
+                    component="div"
+                    color={personalProjectStatues[status].color}
+                  >
+                    {personalProjectStatues[status].value}
+                  </Typography>
+
+                  <Box>
+                    <Typography component="span" fontWeight={600}>
+                      {context?.isStudent ? "Teacher" : "Student"}:
+                    </Typography>
+                    <Typography component="span">
+                      {context?.isStudent ? project.teacher.name : student.name}
+                    </Typography>
+                  </Box>
+
+                  <Typography variant="body2">{project.description}</Typography>
+                </CardContent>
+              </Card>
+            </Grid>
+          ))
+        ) : (
+          <Grid item xs={12}>
+            <Typography
+              variant="h6"
+              component="div"
+              sx={{ textAlignLast: "center" }}
             >
-              <CardContent>
-                <Typography variant="h5" component="div">
-                  {project.title}
-                </Typography>
-                <Typography
-                  component="div"
-                  color={personalProjectStatues[status].color}
-                >
-                  {personalProjectStatues[status].value}
-                </Typography>
-
-                <Box>
-                  <Typography component="span" fontWeight={600}>
-                    {context?.isStudent ? "Teacher" : "Student"}:
-                  </Typography>
-                  <Typography component="span">
-                    {context?.isStudent ? project.teacher.name : student.name}
-                  </Typography>
-                </Box>
-
-                <Typography variant="body2">{project.description}</Typography>
-              </CardContent>
-            </Card>
+              You have no personal projects. Please, visit the{" "}
+              <Link href="/">projects page</Link> and apply for the desired one
+              or contact your teacher.
+            </Typography>
           </Grid>
-        ))}
+        )}
       </Grid>
+    </Box>
+  ) : (
+    <Box
+      sx={{
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        height: "100vh",
+      }}
+    >
+      <CircularProgress />
     </Box>
   );
 };

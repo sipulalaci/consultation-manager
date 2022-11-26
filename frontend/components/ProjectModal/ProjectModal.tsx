@@ -15,11 +15,9 @@ import { postProject } from "../../api/api";
 import { AxiosError } from "axios";
 import { toast } from "react-toastify";
 import { Context } from "../../contexts/UserContext";
+import { blockInvalidNumberInputChar } from "../../utils/blockInvalidNumberInputChar";
 
-export const blockInvalidNumberInputChar = (e: any) =>
-  ["e", "E", "+", "-"].includes(e.key) && e.preventDefault();
-
-export const ProjectModal = ({ onSuccess, teacherId }) => {
+export const ProjectModal = ({ onSuccess }) => {
   const [isOpen, setIsOpen] = useState(false);
   const context = useContext(Context);
 

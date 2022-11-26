@@ -18,11 +18,12 @@ import FilterAltIcon from "@mui/icons-material/FilterAlt";
 import FilterAltOffIcon from "@mui/icons-material/FilterAltOff";
 import { getProjects, postPersonalProject } from "../../api/api";
 import { orderBy, uniqBy } from "lodash";
-import { Context, UserEnum } from "../../contexts/UserContext";
+import { Context } from "../../contexts/UserContext";
 import { ConfirmationModal } from "../ConfirmationModal/ConfirmationModal";
 import { toast } from "react-toastify";
 import { useRouter } from "next/router";
 import { AxiosError } from "axios";
+import { UserEnum } from "../../types/User";
 
 export interface Project {
   id: string;
@@ -91,7 +92,7 @@ export const Projects = () => {
     ) {
       setIsModalOpen(true);
     }
-  }, [selectedProject]);
+  }, [selectedProject, context]);
 
   return (
     <Box sx={{ p: 2 }}>

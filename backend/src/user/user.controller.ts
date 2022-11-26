@@ -10,6 +10,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { PersonalProjectStatus } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { Protected, User } from '../auth/jwt.decorator';
@@ -26,7 +27,17 @@ export class UserController {
   async getMe(@Headers('Authorization') authorization: string) {
     const token = authorization.replace('Bearer ', '');
     const { sub } = await this.jwtService.verifyAsync(token);
-    const user = await this.prisma.user.findUnique({ where: { id: sub } });
+    const user = await this.prisma.user.findUnique({
+      where: { id: sub },
+      include: {
+        personalProjects: {
+          where: {
+            status:
+              PersonalProjectStatus.PENDING || PersonalProjectStatus.PENDING,
+          },
+        },
+      },
+    });
     if (!user) {
       throw new UnauthorizedException();
     }
