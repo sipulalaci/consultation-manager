@@ -1,4 +1,13 @@
-import { Body, Controller, Get, Param, Post, Put } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Put,
+  NotFoundException,
+} from '@nestjs/common';
+import { PersonalProjectStatus } from '@prisma/client';
 import { PrismaService } from 'prisma/prisma.service';
 import { Protected } from '../auth/jwt.decorator';
 
@@ -8,10 +17,21 @@ export class ConsultationController {
 
   @Protected()
   @Post()
-  async createConsultation(@Body() newConsultation: any) {
+  async createConsultation(
+    @Body() newConsultation: { teacherId: string; date: Date },
+  ) {
     console.log('newConsultation', newConsultation);
+    const { teacherId, ...rest } = newConsultation;
+
     const consultation = await this.prisma.consultation.create({
-      data: newConsultation,
+      data: {
+        ...rest,
+        participants: {
+          connect: {
+            id: teacherId,
+          },
+        },
+      },
     });
     return consultation;
   }
@@ -26,9 +46,59 @@ export class ConsultationController {
   }
 
   @Protected()
-  @Get()
+  @Get('student/:id')
   async getConsultations() {
-    return this.prisma.consultation.findMany();
+    const personalProject = await this.prisma.personalProject.findMany({
+      where: { status: PersonalProjectStatus.APPROVED },
+      include: {
+        project: {
+          include: {
+            teacher: {
+              select: {
+                id: true,
+              },
+            },
+          },
+        },
+      },
+    });
+    if (!personalProject || personalProject.length === 0) {
+      throw new NotFoundException('There are no available consultations');
+    }
+
+    return this.prisma.consultation.findMany({
+      orderBy: {
+        date: 'asc',
+      },
+      where: {
+        personalProjectId: null,
+        participants: {
+          some: {
+            id: personalProject[0].project.teacher.id,
+          },
+        },
+      },
+    });
+  }
+
+  @Protected()
+  @Get('teacher/:id')
+  async getConsultationsByTeacher(@Param('id') id: any) {
+    return this.prisma.consultation.findMany({
+      where: {
+        participants: {
+          some: {
+            id,
+          },
+        },
+      },
+      orderBy: {
+        date: 'asc',
+      },
+      include: {
+        personalProject: true,
+      },
+    });
   }
 
   @Protected()

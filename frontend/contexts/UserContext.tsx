@@ -1,6 +1,9 @@
 import { createContext, ReactNode, useEffect, useState } from "react";
 import { getMe } from "../api/api";
-import { PersonalProject } from "../components/PersonalProjects/PersonalProjects";
+import {
+  PersonalProject,
+  PersonalProjectStatusEnum,
+} from "../components/PersonalProjects/PersonalProjects";
 import { User, UserEnum } from "../types/User";
 import {
   getFromStorage,
@@ -19,6 +22,7 @@ export const Context = createContext<{
   isTeacher: boolean;
   isStudent: boolean;
   hasActivePersonalProject: boolean;
+  hasApprovedPersonalProject: boolean;
 } | null>(null);
 
 export const UserContext = ({ children }: UserContextProps) => {
@@ -29,6 +33,11 @@ export const UserContext = ({ children }: UserContextProps) => {
   const isStudent = user?.type === UserEnum.STUDENT;
   const hasActivePersonalProject = user?.personalProjects
     ? user?.personalProjects?.length > 0
+    : false;
+  const hasApprovedPersonalProject = user?.personalProjects
+    ? user?.personalProjects?.some(
+        (project) => project.status === PersonalProjectStatusEnum.APPROVED
+      )
     : false;
 
   useEffect(() => {
@@ -52,6 +61,7 @@ export const UserContext = ({ children }: UserContextProps) => {
     isTeacher,
     isStudent,
     hasActivePersonalProject,
+    hasApprovedPersonalProject,
   };
 
   return <Context.Provider value={context}>{children}</Context.Provider>;

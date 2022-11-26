@@ -1,8 +1,10 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Get,
   Headers,
+  NotFoundException,
   Param,
   Post,
   Put,
@@ -24,7 +26,24 @@ export class PersonalProjectController {
 
   @Protected()
   @Post()
-  async createPersonalProject(@Body() newPersonalProject: any) {
+  async createPersonalProject(
+    @Body() newPersonalProject: { studentId: string; projectId: string },
+  ) {
+    const activePersonalProjects = await this.prisma.personalProject.findMany({
+      where: {
+        studentId: newPersonalProject.studentId,
+        OR: [
+          { status: PersonalProjectStatus.APPROVED },
+          { status: PersonalProjectStatus.PENDING },
+        ],
+      },
+    });
+
+    if (activePersonalProjects.length > 0) {
+      throw new BadRequestException(
+        'Student already has an active personal project',
+      );
+    }
     const personalProject = await this.prisma.personalProject.create({
       data: {
         ...newPersonalProject,
@@ -47,8 +66,15 @@ export class PersonalProjectController {
       include: {
         schedules: {
           include: {
-            tasks: true,
+            tasks: {
+              orderBy: {
+                createdAt: 'asc',
+              },
+            },
             comments: {
+              orderBy: {
+                createdAt: 'asc',
+              },
               include: {
                 user: {
                   select: {
@@ -68,6 +94,11 @@ export class PersonalProjectController {
                 name: true,
               },
             },
+          },
+        },
+        consultations: {
+          orderBy: {
+            date: 'asc',
           },
         },
       },
@@ -131,6 +162,44 @@ export class PersonalProjectController {
     @Param('id') id: any,
     @Body() updatedPersonalProject: any,
   ) {
+    const personalProjectInDb = await this.prisma.personalProject.findUnique({
+      where: { id },
+    });
+
+    if (!personalProjectInDb) {
+      throw new NotFoundException(`Personal Project with id ${id} not found`);
+    }
+
+    if (
+      updatedPersonalProject.status &&
+      updatedPersonalProject.status !== personalProjectInDb.status &&
+      [PersonalProjectStatus.APPROVED, PersonalProjectStatus.PENDING].includes(
+        updatedPersonalProject.status,
+      )
+    ) {
+      const activePersonalProjects = await this.prisma.personalProject.findMany(
+        {
+          where: {
+            studentId: personalProjectInDb.studentId,
+            OR: [
+              { status: PersonalProjectStatus.APPROVED },
+              { status: PersonalProjectStatus.PENDING },
+            ],
+          },
+        },
+      );
+
+      if (
+        activePersonalProjects.length > 1 ||
+        (activePersonalProjects.length === 1 &&
+          activePersonalProjects[0].id !== personalProjectInDb.id)
+      ) {
+        throw new BadRequestException(
+          'Student already has an active personal project',
+        );
+      }
+    }
+
     const personalProject = await this.prisma.personalProject.update({
       where: { id },
       data: updatedPersonalProject,

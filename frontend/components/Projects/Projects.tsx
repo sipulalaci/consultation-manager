@@ -62,7 +62,10 @@ export const Projects = () => {
 
       router.reload();
     } catch (e) {
-      toast.error((e as AxiosError).message);
+      toast.error(
+        (e as AxiosError<{ statusCode: number; message: string }>).response
+          ?.data?.message
+      );
     }
   };
 

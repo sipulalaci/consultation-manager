@@ -95,7 +95,11 @@ export const PersonalProjects = () => {
           : null
       );
     } catch (e) {
-      toast.error((e as AxiosError).message);
+      console.log(e);
+      toast.error(
+        (e as AxiosError<{ statusCode: number; message: string }>).response
+          ?.data?.message
+      );
     }
   };
 
@@ -110,7 +114,12 @@ export const PersonalProjects = () => {
         .then((response) => {
           setPersonalProjects(response);
         })
-        .catch((error) => toast.error((error as AxiosError).message));
+        .catch((e) =>
+          toast.error(
+            (e as AxiosError<{ statusCode: number; message: string }>).response
+              ?.data?.message
+          )
+        );
     }
   }, [context, personalProjects]);
 

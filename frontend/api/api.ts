@@ -150,3 +150,26 @@ export const getCommentsByUser = async (userId: string) => {
   const { data } = await protectedApi.get(`/comments/user/${userId}`);
   return data;
 };
+
+export const postConsultations = async (consultation: {
+  date: Date;
+  teacherId: string;
+}) => {
+  const { data } = await protectedApi.post("/consultations", consultation);
+  return data;
+};
+
+export const getConsultationsForStudent = async (userId: string) => {
+  const { data } = await protectedApi.get(`/consultations/student/${userId}`);
+  return data;
+};
+
+export const getConsultationsForTeacher = async (userId: string) => {
+  const { data } = await protectedApi.get(`/consultations/teacher/${userId}`);
+  return data;
+};
+
+export const putConsultation = async (id: string, consultation: any) => {
+  const { data } = await protectedApi.put(`/consultations/${id}`, consultation);
+  return data;
+};

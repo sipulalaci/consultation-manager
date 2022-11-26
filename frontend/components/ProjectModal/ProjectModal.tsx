@@ -41,7 +41,10 @@ export const ProjectModal = ({ onSuccess, onCancel, forceOpen }: Props) => {
       onSuccess(response);
       handleCancel();
     } catch (e) {
-      toast.error((e as AxiosError).message);
+      toast.error(
+        (e as AxiosError<{ statusCode: number; message: string }>).response
+          ?.data?.message
+      );
     }
   };
 

@@ -28,7 +28,10 @@ export const QAndAs = () => {
         setSchedules(response);
       })
       .catch((e) => {
-        toast.error((e as AxiosError).message);
+        toast.error(
+          (e as AxiosError<{ statusCode: number; message: string }>).response
+            ?.data?.message
+        );
       });
   }, []);
 

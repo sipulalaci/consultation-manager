@@ -1,8 +1,13 @@
 import {
+  Avatar,
   Box,
   Button,
   Divider,
   IconButton,
+  List,
+  ListItem,
+  ListItemAvatar,
+  ListItemText,
   Step,
   StepContent,
   StepLabel,
@@ -36,16 +41,17 @@ import { Tasks } from "../Tasks/Tasks";
 import { Schedule } from "../../types/Schedule";
 import { Comment } from "../../types/Comment";
 import { Task } from "../../types/Task";
+import GroupsIcon from "@mui/icons-material/Groups";
 
 export const PersonalProjectDetails = () => {
   const router = useRouter();
   const [personalProject, setPersonalProject] = useState<
-    (PersonalProject & { schedules: Schedule[] }) | null
+    (PersonalProject & { schedules: Schedule[]; consultations: any[] }) | null
   >(null);
   const [activeSchedule, setActiveSchedule] = useState(0);
   const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
   const context = useContext(Context);
-
+  console.log({ isScheduleModalOpen });
   const canEdit =
     (context?.isTeacher ||
       (context?.isStudent &&
@@ -58,22 +64,31 @@ export const PersonalProjectDetails = () => {
     deadline: string;
   }) => {
     if (!personalProject || !canEdit) return;
-    const newSchedule = await postSchedule({
-      ...schedule,
-      personalProjectId: personalProject?.id,
-    });
-    setPersonalProject((currentState) =>
-      currentState
-        ? {
-            ...currentState,
-            schedules: orderBy(
-              [...currentState?.schedules, newSchedule as Schedule],
-              "deadline",
-              "asc"
-            ),
-          }
-        : null
-    );
+
+    try {
+      const newSchedule = await postSchedule({
+        ...schedule,
+        personalProjectId: personalProject?.id,
+      });
+      setPersonalProject((currentState) =>
+        currentState
+          ? {
+              ...currentState,
+              schedules: orderBy(
+                [...currentState?.schedules, newSchedule as Schedule],
+                "deadline",
+                "asc"
+              ),
+            }
+          : null
+      );
+      setIsScheduleModalOpen(false);
+    } catch (e) {
+      toast.error(
+        (e as AxiosError<{ statusCode: number; message: string }>).response
+          ?.data.message
+      );
+    }
   };
 
   const handleTaskCreate = async (scheduleId: string, text: string) => {
@@ -126,8 +141,11 @@ export const PersonalProjectDetails = () => {
             }
           : null
       );
-    } catch (error) {
-      toast.error((error as AxiosError).message);
+    } catch (e) {
+      toast.error(
+        (e as AxiosError<{ statusCode: number; message: string }>).response
+          ?.data?.message
+      );
     }
   };
 
@@ -152,8 +170,11 @@ export const PersonalProjectDetails = () => {
             }
           : null
       );
-    } catch (err) {
-      toast.error((err as AxiosError).message);
+    } catch (e) {
+      toast.error(
+        (e as AxiosError<{ statusCode: number; message: string }>).response
+          ?.data?.message
+      );
     }
   };
 
@@ -166,8 +187,11 @@ export const PersonalProjectDetails = () => {
       .then((res) => {
         setPersonalProject(res);
       })
-      .catch((err) => {
-        toast.error((err as AxiosError).message);
+      .catch((e) => {
+        toast.error(
+          (e as AxiosError<{ statusCode: number; message: string }>).response
+            ?.data?.message
+        );
       });
   }, [router, personalProject]);
 
@@ -289,6 +313,39 @@ export const PersonalProjectDetails = () => {
                     <Typography>Project is not active!</Typography>
                   )}
                 </Box>
+              )}
+              <Divider sx={{ margin: "1rem 0" }} />
+              <Typography fontWeight={600}>Events:</Typography>
+              {personalProject.consultations?.length ? (
+                <List
+                  sx={{
+                    width: "100%",
+                    maxWidth: 360,
+                    bgcolor: "background.paper",
+                    boxShadow: 1,
+                  }}
+                >
+                  {personalProject.consultations.map((consultation) => (
+                    <ListItem>
+                      <ListItemAvatar>
+                        <Avatar>
+                          <GroupsIcon />
+                        </Avatar>
+                      </ListItemAvatar>
+                      <ListItemText
+                        primary="Consultation"
+                        secondary={format(
+                          new Date(consultation.date),
+                          "HH:mm - yyyy.MM.dd"
+                        )}
+                      />
+                    </ListItem>
+                  ))}
+                </List>
+              ) : (
+                <Typography sx={{ textAlignLast: "center" }}>
+                  There are no events for this project.
+                </Typography>
               )}
             </>
           ) : (
