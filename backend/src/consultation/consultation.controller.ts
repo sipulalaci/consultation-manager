@@ -24,7 +24,6 @@ export class ConsultationController {
   async createConsultation(
     @Body() newConsultation: { teacherId: string; date: Date },
   ) {
-    console.log('newConsultation', newConsultation);
     const { teacherId, ...rest } = newConsultation;
 
     const consultation = await this.prisma.consultation.create({
@@ -127,9 +126,8 @@ export class ConsultationController {
         },
       },
     });
-    console.log('consultation', consultation);
     if (consultation.personalProjectId) {
-      await this.mailService.sendUserConfirmation(
+      await this.mailService.sendConsultationBook(
         consultation.participants[0],
         consultation.participants[1],
         consultation,

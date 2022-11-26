@@ -49,7 +49,6 @@ export const Consultations = () => {
     if (!selectedConsultation || !context?.user?.personalProjects.length)
       return;
 
-    console.log("Reserve consultation", selectedConsultation);
     try {
       const consultation = await putConsultation(selectedConsultation.id, {
         personalProjectId: context?.user?.personalProjects[0].id,

@@ -51,7 +51,6 @@ export const PersonalProjectDetails = () => {
   const [activeSchedule, setActiveSchedule] = useState(0);
   const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
   const context = useContext(Context);
-  console.log({ isScheduleModalOpen });
   const canEdit =
     (context?.isTeacher ||
       (context?.isStudent &&

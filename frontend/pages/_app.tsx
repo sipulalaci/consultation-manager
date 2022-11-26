@@ -35,7 +35,6 @@ function MyApp({ Component, pageProps }: AppProps) {
   const router = useRouter();
   const isUserAuthenticated = getFromStorage("token") ? true : false;
   const isPublicPage = ["/login", "/signup"].includes(router.pathname);
-  console.log(router.pathname);
 
   const handleLogout = () => {
     localStorage.removeItem("token");

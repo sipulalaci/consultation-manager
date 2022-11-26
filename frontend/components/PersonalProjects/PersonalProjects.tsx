@@ -95,7 +95,6 @@ export const PersonalProjects = () => {
           : null
       );
     } catch (e) {
-      console.log(e);
       toast.error(
         (e as AxiosError<{ statusCode: number; message: string }>).response
           ?.data?.message

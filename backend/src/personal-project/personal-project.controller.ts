@@ -13,8 +13,11 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import { PersonalProjectStatus } from '@prisma/client';
 import { NotFoundError } from '@prisma/client/runtime';
+import { addDays, isSameDay } from 'date-fns';
 import { PrismaService } from 'prisma/prisma.service';
+import { concatMap } from 'rxjs';
 import { Protected } from '../auth/jwt.decorator';
+import { MailService } from '../mail/mail.service';
 import { jwtDecoder } from '../utils/jwtDecoder';
 
 @Controller('personal-projects')
@@ -22,7 +25,43 @@ export class PersonalProjectController {
   constructor(
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
+    private readonly mailService: MailService,
   ) {}
+
+  @Get('check-progression')
+  async checkProgression() {
+    const checkedDate = addDays(new Date(), -1);
+    const personalProjects = await this.prisma.personalProject.findMany({
+      include: {
+        student: { select: { name: true } },
+        schedules: {
+          include: {
+            tasks: true,
+          },
+        },
+        project: {
+          include: {
+            teacher: true,
+          },
+        },
+      },
+    });
+
+    personalProjects.forEach((personalProject) => {
+      personalProject.schedules.forEach((schedule) => {
+        if (!isSameDay(new Date(schedule.deadline), checkedDate)) return;
+        const unfinishedTasks = schedule.tasks.some((task) => !task.isDone);
+        if (unfinishedTasks) {
+          this.mailService.sendFailedDeadline(
+            personalProject.project.teacher,
+            personalProject.student.name,
+            personalProject.project.title,
+            `http://localhost:3000/personal-projects/${personalProject.id}`,
+          );
+        }
+      });
+    });
+  }
 
   @Protected()
   @Post()

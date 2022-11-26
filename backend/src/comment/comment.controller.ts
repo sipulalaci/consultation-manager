@@ -18,7 +18,6 @@ export class CommentController {
   @Protected()
   @Post()
   async createComment(@Body() newComment: any) {
-    console.log('newComment', newComment);
     const comment = await this.prisma.comment.create({
       data: newComment,
       include: {
