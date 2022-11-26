@@ -1,6 +1,15 @@
-import { Body, Controller, Param, Post, Put } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Put,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from 'prisma/prisma.service';
 import { Protected } from '../auth/jwt.decorator';
+import { uniq } from 'lodash';
 
 @Controller('comments')
 export class CommentController {
@@ -32,5 +41,50 @@ export class CommentController {
       data: updatedComment,
     });
     return comment;
+  }
+
+  @Protected()
+  @Get('user/:id')
+  async getCommentsByUser(@Param('id') id: any) {
+    const comments = await this.prisma.comment.findMany({
+      where: { userId: id },
+      include: {
+        schedule: {
+          select: {
+            id: true,
+          },
+        },
+      },
+    });
+
+    if (!comments.length) {
+      throw new NotFoundException('No comments found for this user');
+    }
+
+    const scheduleIds = uniq(comments.map((comment) => comment.schedule.id));
+
+    const schedules = await this.prisma.schedule.findMany({
+      orderBy: {
+        createdAt: 'desc',
+      },
+      where: { id: { in: scheduleIds } },
+      include: {
+        comments: {
+          orderBy: {
+            createdAt: 'asc',
+          },
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    return schedules;
   }
 }

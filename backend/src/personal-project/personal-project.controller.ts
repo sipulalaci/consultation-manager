@@ -12,7 +12,6 @@ import { JwtService } from '@nestjs/jwt';
 import { PersonalProjectStatus } from '@prisma/client';
 import { NotFoundError } from '@prisma/client/runtime';
 import { PrismaService } from 'prisma/prisma.service';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { Protected } from '../auth/jwt.decorator';
 import { jwtDecoder } from '../utils/jwtDecoder';
 
@@ -93,6 +92,9 @@ export class PersonalProjectController {
     const userId = await jwtDecoder(authorization, this.jwtService);
 
     return this.prisma.personalProject.findMany({
+      orderBy: {
+        createdAt: 'desc',
+      },
       where: {
         OR: [
           { studentId: userId },

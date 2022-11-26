@@ -145,3 +145,8 @@ export const postComment = async (comment: any) => {
   const { data } = await protectedApi.post("/comments", comment);
   return data;
 };
+
+export const getCommentsByUser = async (userId: string) => {
+  const { data } = await protectedApi.get(`/comments/user/${userId}`);
+  return data;
+};

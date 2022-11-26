@@ -14,6 +14,10 @@ import { UserWrapper } from "../components/UserWrapper/UserWrapper";
 
 const menuElements = [
   {
+    name: "Q&A",
+    link: "/q-and-a",
+  },
+  {
     name: "Projects",
     link: "/",
   },
@@ -31,6 +35,7 @@ function MyApp({ Component, pageProps }: AppProps) {
   const router = useRouter();
   const isUserAuthenticated = getFromStorage("token") ? true : false;
   const isPublicPage = ["/login", "/signup"].includes(router.pathname);
+  console.log(router.pathname);
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -76,6 +81,24 @@ function MyApp({ Component, pageProps }: AppProps) {
                         ":hover": { cursor: "pointer" },
                         fontSize: "1rem",
                         alignSelf: "center",
+                        ...(element.link === router.pathname
+                          ? {
+                              position: "relative",
+                              ":after": {
+                                content: "''",
+                                display: "block",
+                                width: "1.5rem",
+                                height: "2px",
+                                backgroundColor: "lightgray",
+                                bottom: "-0.25rem",
+                                left: "50%",
+                                transform: "translateX(-50%)",
+                                position: "absolute",
+                                borderRadius: "1px",
+                                xIndex: 2,
+                              },
+                            }
+                          : {}),
                       }}
                     >
                       {element.name}
