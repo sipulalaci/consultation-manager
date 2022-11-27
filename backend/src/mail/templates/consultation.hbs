@@ -1,5 +1,9 @@
 <p>Hey {{ name1 }},</p>
+{{#if name2}}
 <p>{{ name2}} just booked the following consultation.</p>
+{{else}}
+<p>You just booked the following consultation.</p>
+{{/if}}
 <p>
     <strong>
         {{date}}

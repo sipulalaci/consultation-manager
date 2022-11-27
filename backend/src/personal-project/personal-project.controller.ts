@@ -30,10 +30,10 @@ export class PersonalProjectController {
 
   @Get('check-progression')
   async checkProgression() {
-    const checkedDate = addDays(new Date(), -1);
+    const checkedDate = addDays(new Date(2022, 10, 31), -1);
     const personalProjects = await this.prisma.personalProject.findMany({
       include: {
-        student: { select: { name: true } },
+        student: true,
         schedules: {
           include: {
             tasks: true,
@@ -54,7 +54,7 @@ export class PersonalProjectController {
         if (unfinishedTasks) {
           this.mailService.sendFailedDeadline(
             personalProject.project.teacher,
-            personalProject.student.name,
+            personalProject.student,
             personalProject.project.title,
             `http://localhost:3000/personal-projects/${personalProject.id}`,
           );
