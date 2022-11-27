@@ -325,7 +325,7 @@ export const PersonalProjectDetails = () => {
                   }}
                 >
                   {personalProject.consultations.map((consultation) => (
-                    <ListItem>
+                    <ListItem key={consultation.id}>
                       <ListItemAvatar>
                         <Avatar>
                           <GroupsIcon />

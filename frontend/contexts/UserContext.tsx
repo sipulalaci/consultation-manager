@@ -29,16 +29,23 @@ export const UserContext = ({ children }: UserContextProps) => {
   const [user, setUser] = useState<
     (User & { personalProjects: PersonalProject[] }) | null
   >(null);
-  const isTeacher = user?.type === UserEnum.TEACHER;
-  const isStudent = user?.type === UserEnum.STUDENT;
-  const hasActivePersonalProject = user?.personalProjects
-    ? user?.personalProjects?.length > 0
-    : false;
-  const hasApprovedPersonalProject = user?.personalProjects
-    ? user?.personalProjects?.some(
-        (project) => project.status === PersonalProjectStatusEnum.APPROVED
-      )
-    : false;
+  const [isTeacher, setIsTeacher] = useState(false);
+  const [isStudent, setIsStudent] = useState(false);
+  const [hasActivePersonalProject, setHasActivePersonalProject] =
+    useState(false);
+  const [hasApprovedPersonalProject, setHasApprovedPersonalProject] =
+    useState(false);
+
+  // const isTeacher = user?.type === UserEnum.TEACHER;
+  // const isStudent = user?.type === UserEnum.STUDENT;
+  // const hasActivePersonalProject = user?.personalProjects
+  //   ? user?.personalProjects?.length > 0
+  //   : false;
+  // const hasApprovedPersonalProject = user?.personalProjects
+  //   ? user?.personalProjects?.some(
+  //       (project) => project.status === PersonalProjectStatusEnum.APPROVED
+  //     )
+  //   : false;
 
   useEffect(() => {
     if (!user) {
@@ -52,6 +59,15 @@ export const UserContext = ({ children }: UserContextProps) => {
             removeFromStorage("token");
           });
       }
+    } else {
+      setIsTeacher(user.type === UserEnum.TEACHER);
+      setIsStudent(user.type === UserEnum.STUDENT);
+      setHasActivePersonalProject(user.personalProjects?.length > 0);
+      setHasApprovedPersonalProject(
+        user.personalProjects?.some(
+          (project) => project.status === PersonalProjectStatusEnum.APPROVED
+        )
+      );
     }
   }, [user]);
 

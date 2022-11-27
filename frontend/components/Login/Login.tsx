@@ -15,17 +15,33 @@ import { toast } from "react-toastify";
 import { useRouter } from "next/router";
 import { useContext } from "react";
 import { Context } from "../../contexts/UserContext";
+import * as Yup from "yup";
 
 export const Login = () => {
   const router = useRouter();
   const context = useContext(Context);
 
-  const { values, handleChange, handleSubmit } = useFormik({
+  const {
+    values,
+    errors,
+    touched,
+    handleChange,
+    handleSubmit,
+    setFieldTouched,
+  } = useFormik({
     initialValues: {
       email: "",
       password: "",
     },
+    validationSchema: Yup.object({
+      email: Yup.string()
+        .email("Invalid email address")
+        .required("Email equired"),
+      password: Yup.string().required("Password required"),
+    }),
     onSubmit: async (values) => handleSubmit2(values),
+    validateOnMount: true,
+    validateOnBlur: true,
   });
 
   const handleSubmit2 = async (values) => {
@@ -68,6 +84,9 @@ export const Login = () => {
             required
             fullWidth
             id="email"
+            onBlur={() => setFieldTouched("email", true)}
+            error={touched.email && !!errors.email}
+            helperText={(touched.email && errors.email) ?? undefined}
             label="Email Address"
             name="email"
             value={values.email}
@@ -78,6 +97,9 @@ export const Login = () => {
             margin="normal"
             required
             fullWidth
+            onBlur={() => setFieldTouched("password", true)}
+            error={touched.password && !!errors.password}
+            helperText={(touched.password && errors.password) ?? undefined}
             name="password"
             label="Password"
             type="password"
@@ -90,6 +112,7 @@ export const Login = () => {
             fullWidth
             variant="contained"
             sx={{ mt: 3, mb: 2 }}
+            disabled={Object.keys(errors).length > 0}
             onClick={(e) => handleSubmit()}
           >
             Sign In

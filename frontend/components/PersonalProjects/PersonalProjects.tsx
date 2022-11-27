@@ -165,6 +165,9 @@ export const PersonalProjects = () => {
                               value={key}
                               key={key}
                               onClick={(e) => e.stopPropagation()}
+                              sx={{
+                                color: value.color,
+                              }}
                             >
                               {value.value}
                             </MenuItem>

@@ -16,6 +16,7 @@ import { AxiosError } from "axios";
 import { toast } from "react-toastify";
 import { Context } from "../../contexts/UserContext";
 import { blockInvalidNumberInputChar } from "../../utils/blockInvalidNumberInputChar";
+import * as Yup from "yup";
 
 interface Props {
   onSuccess: (response) => void;
@@ -48,7 +49,15 @@ export const ProjectModal = ({ onSuccess, onCancel, forceOpen }: Props) => {
     }
   };
 
-  const { values, handleChange, handleSubmit, resetForm } = useFormik({
+  const {
+    errors,
+    touched,
+    values,
+    handleChange,
+    handleSubmit,
+    resetForm,
+    setFieldTouched,
+  } = useFormik({
     initialValues: {
       title: "",
       description: "",
@@ -57,6 +66,20 @@ export const ProjectModal = ({ onSuccess, onCancel, forceOpen }: Props) => {
     onSubmit: (values) => {
       handleCreate(values);
     },
+    validateOnMount: true,
+    validationSchema: Yup.object({
+      title: Yup.string().required("Title is required"),
+      description: Yup.string().required("Description is required"),
+      capacity: Yup.number()
+        .required("Capacity is required")
+        .test("test_length_greater_than_40", "", function (value) {
+          return value && +value > 0
+            ? true
+            : this.createError({
+                message: "Capacity must be greater than 0",
+              });
+        }),
+    }),
   });
 
   const handleCancel = () => {
@@ -90,9 +113,11 @@ export const ProjectModal = ({ onSuccess, onCancel, forceOpen }: Props) => {
                 name="title"
                 required
                 fullWidth
+                error={!!errors.title && !!touched.title}
+                helperText={(touched.title && errors.title) ?? undefined}
+                onBlur={() => setFieldTouched("title")}
                 id="title"
                 label="Title"
-                autoFocus
                 value={values.title}
                 onChange={handleChange}
               />
@@ -101,6 +126,11 @@ export const ProjectModal = ({ onSuccess, onCancel, forceOpen }: Props) => {
               <TextField
                 required
                 fullWidth
+                error={!!errors.description && !!touched.description}
+                helperText={
+                  (touched.description && errors.description) ?? undefined
+                }
+                onBlur={() => setFieldTouched("description")}
                 id="description"
                 label="Description"
                 name="description"
@@ -120,6 +150,9 @@ export const ProjectModal = ({ onSuccess, onCancel, forceOpen }: Props) => {
                 }}
                 required
                 fullWidth
+                error={!!errors.capacity && !!touched.capacity}
+                helperText={(touched.capacity && errors.capacity) ?? undefined}
+                onBlur={() => setFieldTouched("capacity")}
                 id="capacity"
                 label="Capacity"
                 name="capacity"

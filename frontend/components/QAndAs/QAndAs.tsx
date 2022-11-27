@@ -43,7 +43,7 @@ export const QAndAs = () => {
       <Divider sx={{ my: 2 }} />
       {schedules && !!schedules.length ? (
         schedules.map((schedule) => (
-          <Accordion sx={{ background: "#dcdcdc" }}>
+          <Accordion sx={{ background: "#dcdcdc" }} key={schedule.id}>
             <AccordionSummary
               expandIcon={<ExpandMoreIcon />}
               id="panel1a-header"

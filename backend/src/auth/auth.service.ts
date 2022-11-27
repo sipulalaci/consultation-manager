@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { User, UserType } from '@prisma/client';
+import { PersonalProjectStatus, User, UserType } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
 
@@ -9,7 +9,19 @@ export class AuthService {
   constructor(private prisma: PrismaService, private jwtService: JwtService) {}
 
   async validateUser(email: string, pass: string): Promise<any> {
-    const user = await this.prisma.user.findUnique({ where: { email } });
+    const user = await this.prisma.user.findUnique({
+      where: { email },
+      include: {
+        personalProjects: {
+          where: {
+            OR: [
+              { status: PersonalProjectStatus.PENDING },
+              { status: PersonalProjectStatus.APPROVED },
+            ],
+          },
+        },
+      },
+    });
     if (!user) {
       return null;
     }
@@ -44,6 +56,16 @@ export class AuthService {
     // const hashedPassword = bcrypt.hash(user.password, 10);
     const newUser = await this.prisma.user.create({
       data: { ...user, password: hashedPassword },
+      include: {
+        personalProjects: {
+          where: {
+            OR: [
+              { status: PersonalProjectStatus.PENDING },
+              { status: PersonalProjectStatus.APPROVED },
+            ],
+          },
+        },
+      },
     });
     const payload = { username: newUser.name, sub: newUser.id };
     return {

@@ -13,11 +13,10 @@ import {
 } from "@mui/material";
 import React, { useContext, useEffect, useState } from "react";
 import { ProjectModal } from "../ProjectModal/ProjectModal";
-
 import FilterAltIcon from "@mui/icons-material/FilterAlt";
 import FilterAltOffIcon from "@mui/icons-material/FilterAltOff";
 import { getProjects, postPersonalProject } from "../../api/api";
-import { orderBy, uniqBy } from "lodash";
+import { get, orderBy, uniqBy } from "lodash";
 import { Context } from "../../contexts/UserContext";
 import { ConfirmationModal } from "../ConfirmationModal/ConfirmationModal";
 import { toast } from "react-toastify";
@@ -50,6 +49,7 @@ export const Projects = () => {
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [shouldForceModalOpen, setShouldForceModalOpen] = useState(false);
+  console.log({ context });
 
   const handleSignup = async () => {
     if (!context?.user || !selectedProject) return;
@@ -76,16 +76,22 @@ export const Projects = () => {
 
   useEffect(() => {
     (async () => {
-      const response = await getProjects();
-      setProjects(response);
-      setTeachers(
-        uniqBy(
-          response.map((project) => project.teacher),
-          "id"
-        )
-      );
+      try {
+        const response = await getProjects();
+        setProjects(response);
+      } catch (e) {
+        toast.error(
+          (e as AxiosError<{ statusCode: number; message: string }>).response
+            ?.data?.message
+        );
+      }
     })();
   }, []);
+
+  useEffect(() => {
+    const teachers = projects.map((project) => project.teacher);
+    setTeachers(uniqBy(teachers, "id"));
+  }, [projects]);
 
   useEffect(() => {
     if (
@@ -152,6 +158,9 @@ export const Projects = () => {
             onChange={(e) => setTeacherFilter(e.target.value)}
             sx={{ width: "50%" }}
           >
+            <MenuItem value="">
+              <em>None</em>
+            </MenuItem>
             {teachers.map((teacher) => (
               <MenuItem value={teacher.id} key={teacher.id}>
                 {teacher.name}
@@ -188,7 +197,9 @@ export const Projects = () => {
                       color="text.secondary"
                       gutterBottom
                     >
-                      {`${project.personalProjectsCount}/${project.capacity}`}
+                      {`${get(project, "personalProjectsCount", 0)}/${
+                        project.capacity
+                      }`}
                     </Typography>
                     <Typography variant="h5" component="div">
                       {project.title}

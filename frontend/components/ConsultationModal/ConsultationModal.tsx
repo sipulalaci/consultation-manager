@@ -1,8 +1,11 @@
 import {
   Box,
   Button,
+  FormControl,
+  FormHelperText,
   Grid,
   IconButton,
+  InputLabel,
   MenuItem,
   Modal,
   TextField,
@@ -15,7 +18,8 @@ import { style } from "../../consts/ModalStyle";
 import { useFormik } from "formik";
 import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
-import { getDate, getMonth, getYear } from "date-fns";
+import { getDate, getMonth, getYear, isAfter } from "date-fns";
+import * as Yup from "yup";
 
 interface Props {
   onConsultationCreate: (
@@ -27,13 +31,37 @@ interface Props {
 export const ConsultationModal = ({ onConsultationCreate }: Props) => {
   const [isOpen, setIsOpen] = useState(false);
 
-  const { values, errors, setFieldValue, handleSubmit, resetForm } = useFormik({
+  const {
+    values,
+    touched,
+    errors,
+    setFieldValue,
+    handleSubmit,
+    resetForm,
+    setFieldTouched,
+  } = useFormik({
     initialValues: {
       date: "",
       hour: "",
       minute: "",
     },
     onSubmit: (values) => handleCreate(values),
+    validateOnBlur: true,
+    validateOnMount: true,
+    validationSchema: Yup.object().shape({
+      date: Yup.date()
+        .required("Date is required")
+        .test("check_date", "Date must be in the future", function (value) {
+          if (!value) return false;
+          const today = new Date();
+          const date = new Date(value);
+          return isAfter(date, today);
+        }),
+      hour: Yup.number().required("Hour is required"),
+      minute: Yup.number()
+        .required("Minute is required")
+        .oneOf([0, 15, 30, 45], "Minute must be 0, 15, 30 or 45"),
+    }),
   });
 
   const handleCreate = (values) => {
@@ -70,21 +98,28 @@ export const ConsultationModal = ({ onConsultationCreate }: Props) => {
           </Typography>
           <Grid container spacing={2}>
             <Grid item xs={12}>
-              <DatePicker
-                value={values.date}
-                onChange={(value) => setFieldValue("date", value)}
-                inputFormat="yyyy/MM/dd"
-                renderInput={(params) => (
-                  <TextField {...params} fullWidth autoFocus />
-                )}
-              ></DatePicker>
+              <FormControl fullWidth error={touched.date && !!errors.date}>
+                <DatePicker
+                  value={values.date}
+                  onChange={(value) => {
+                    setFieldTouched("date");
+                    setFieldValue("date", value);
+                  }}
+                  renderInput={(params) => (
+                    <TextField {...params} fullWidth autoFocus />
+                  )}
+                ></DatePicker>
+                <FormHelperText>{touched.date && errors.date}</FormHelperText>
+              </FormControl>
             </Grid>
             <Grid item xs={6}>
               <TextField
                 id="hour-select"
                 select
                 name="hour"
-                error={!!errors.hour}
+                onBlur={() => setFieldTouched("hour")}
+                error={touched.hour && !!errors.hour}
+                helperText={touched.hour && errors.hour}
                 value={values.hour}
                 label="Hour"
                 onChange={(e) => setFieldValue("hour", e.target.value)}
@@ -102,7 +137,9 @@ export const ConsultationModal = ({ onConsultationCreate }: Props) => {
                 id="minute-select"
                 select
                 name="minute"
-                error={!!errors.minute}
+                onBlur={() => setFieldTouched("minute")}
+                error={touched.minute && !!errors.minute}
+                helperText={touched.minute && errors.minute}
                 value={values.minute}
                 label="Minute"
                 onChange={(e) => setFieldValue("minute", e.target.value)}
