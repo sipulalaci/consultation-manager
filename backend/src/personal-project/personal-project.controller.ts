@@ -104,6 +104,9 @@ export class PersonalProjectController {
       where: { id },
       include: {
         schedules: {
+          orderBy: {
+            createdAt: 'asc',
+          },
           include: {
             tasks: {
               orderBy: {

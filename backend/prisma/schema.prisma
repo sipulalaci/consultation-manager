@@ -27,7 +27,7 @@ model User {
   name             String
   type             UserType
   department       String?
-  neptun           String?
+  neptun           String?           @unique
   projects         Project[]
   personalProjects PersonalProject[]
   consultations    Consultation[]

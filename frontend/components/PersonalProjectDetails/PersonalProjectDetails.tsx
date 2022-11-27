@@ -10,189 +10,118 @@ import {
   ListItemText,
   Step,
   StepContent,
+  StepIconProps,
   StepLabel,
   Stepper,
+  styled,
   Typography,
 } from "@mui/material";
-import { AxiosError } from "axios";
-import { useRouter } from "next/router";
-import { useContext, useEffect, useState } from "react";
-import { toast } from "react-toastify";
 import {
-  getPersonalProject,
-  postComment,
-  postSchedule,
-  postScheduleAddTask,
-  putScheduleToggleTask,
-} from "../../api/api";
-import {
-  canBeEdited,
   isActiveProject,
-  PersonalProject,
   personalProjectStatues,
 } from "../PersonalProjects/PersonalProjects";
 import { ScheduleModal } from "../ScheduleModal/ScheduleModal";
-import { orderBy } from "lodash";
 import AddIcon from "@mui/icons-material/Add";
-import { format } from "date-fns";
-import { Context } from "../../contexts/UserContext";
+import { addDays, format, isAfter, isBefore } from "date-fns";
 import { QAndA } from "../QAndA/QAndA";
 import { Tasks } from "../Tasks/Tasks";
-import { Schedule } from "../../types/Schedule";
-import { Comment } from "../../types/Comment";
-import { Task } from "../../types/Task";
 import GroupsIcon from "@mui/icons-material/Groups";
+import { usePersonalProjectDetails } from "./usePersonalProjectDetails";
+import AccessTimeIcon from "@mui/icons-material/AccessTime";
+import DoneIcon from "@mui/icons-material/Done";
+import WarningIcon from "@mui/icons-material/Warning";
+import ErrorIcon from "@mui/icons-material/Error";
+import { Schedule } from "../../types/Schedule";
+
+const getScheduleStatus = (schedule: Schedule) => {
+  const isComplete = schedule.tasks.every((task) => task.isDone);
+  const isOverdue = isBefore(new Date(schedule.deadline), new Date());
+  const isDue =
+    isBefore(new Date(), new Date(schedule.deadline)) &&
+    isAfter(new Date(), addDays(new Date(schedule.deadline), -5));
+
+  return {
+    isCompleted: isComplete,
+    isFailed: isOverdue && !isComplete,
+    isDue,
+    isInprogress: !isComplete && !isOverdue && !isDue,
+  };
+};
 
 export const PersonalProjectDetails = () => {
-  const router = useRouter();
-  const [personalProject, setPersonalProject] = useState<
-    (PersonalProject & { schedules: Schedule[]; consultations: any[] }) | null
-  >(null);
-  const [activeSchedule, setActiveSchedule] = useState(0);
-  const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
-  const context = useContext(Context);
-  const canEdit =
-    (context?.isTeacher ||
-      (context?.isStudent &&
-        personalProject &&
-        canBeEdited(personalProject.status))) ??
-    false;
+  const {
+    activeSchedule,
+    canEdit,
+    context,
+    isScheduleModalOpen,
+    personalProject,
+    setActiveSchedule,
+    setIsScheduleModalOpen,
+    handleScheduleCreate,
+    handleTaskCreate,
+    handleCommentCreate,
+    handleTaskToggle,
+  } = usePersonalProjectDetails();
 
-  const handleScheduleCreate = async (schedule: {
-    description: string;
-    deadline: string;
+  const ColorlibStepIconRoot = styled("div")<{
+    ownerState: { active?: boolean };
+    scheduleState: {
+      isInprogress?: boolean;
+      isCompleted?: boolean;
+      isDue?: boolean;
+      isFailed?: boolean;
+    };
+  }>(({ theme, ownerState, scheduleState }) => ({
+    zIndex: 1,
+    color: "#fff",
+    width: 24,
+    height: 24,
+    display: "flex",
+    borderRadius: "50%",
+    justifyContent: "center",
+    alignItems: "center",
+    ...(ownerState.active && {
+      background: "#1976d2",
+    }),
+    ...(scheduleState.isInprogress && {
+      background: "#dce775",
+    }),
+    ...(scheduleState.isDue && {
+      background: "#ff5722",
+    }),
+    ...(scheduleState.isFailed && {
+      background: "#d50000",
+    }),
+    ...(scheduleState.isCompleted && {
+      background: "#4caf50",
+    }),
+  }));
+
+  const CustomStepIcon = (props: {
+    active: boolean;
+    isInprogress: boolean;
+    isCompleted: boolean;
+    isFailed: boolean;
+    isDue: boolean;
   }) => {
-    if (!personalProject || !canEdit) return;
-
-    try {
-      const newSchedule = await postSchedule({
-        ...schedule,
-        personalProjectId: personalProject?.id,
-      });
-      setPersonalProject((currentState) =>
-        currentState
-          ? {
-              ...currentState,
-              schedules: orderBy(
-                [...currentState?.schedules, newSchedule as Schedule],
-                "deadline",
-                "asc"
-              ),
-            }
-          : null
-      );
-      setIsScheduleModalOpen(false);
-    } catch (e) {
-      toast.error(
-        (e as AxiosError<{ statusCode: number; message: string }>).response
-          ?.data.message
-      );
-    }
-  };
-
-  const handleTaskCreate = async (scheduleId: string, text: string) => {
-    if (!personalProject || !canEdit) return;
-    const newTask = await postScheduleAddTask(scheduleId, {
-      description: text,
-    });
-
-    setPersonalProject((currentState) =>
-      currentState
-        ? {
-            ...currentState,
-            schedules: currentState.schedules.map((schedule) =>
-              schedule.id === scheduleId
-                ? {
-                    ...schedule,
-                    tasks: [...(schedule.tasks ?? []), newTask as Task],
-                  }
-                : schedule
-            ),
-          }
-        : null
+    const { isInprogress, isCompleted, isFailed, isDue, active } = props;
+    return (
+      <ColorlibStepIconRoot
+        ownerState={{ active }}
+        scheduleState={{ isInprogress, isCompleted, isFailed, isDue }}
+      >
+        {isInprogress ? (
+          <AccessTimeIcon />
+        ) : isCompleted ? (
+          <DoneIcon />
+        ) : isDue ? (
+          <WarningIcon />
+        ) : (
+          <ErrorIcon />
+        )}
+      </ColorlibStepIconRoot>
     );
   };
-
-  const handleCommentCreate = async (scheduleId: string, text: string) => {
-    if (!personalProject || !context || !context.user || !canEdit) return;
-
-    try {
-      const newQuestion = await postComment({
-        question: text,
-        scheduleId,
-        userId: context.user.id,
-      });
-      setPersonalProject((currentState) =>
-        currentState
-          ? {
-              ...currentState,
-              schedules: currentState.schedules.map((schedule) =>
-                schedule.id === scheduleId
-                  ? {
-                      ...schedule,
-                      comments: [
-                        ...(schedule.comments ?? []),
-                        newQuestion as Comment,
-                      ],
-                    }
-                  : schedule
-              ),
-            }
-          : null
-      );
-    } catch (e) {
-      toast.error(
-        (e as AxiosError<{ statusCode: number; message: string }>).response
-          ?.data?.message
-      );
-    }
-  };
-
-  const handleTaskToggle = async (scheduleId: string, taskId: string) => {
-    if (!personalProject || !canEdit) return;
-    try {
-      const updatedTask = await putScheduleToggleTask(scheduleId, taskId);
-      setPersonalProject((currentState) =>
-        currentState
-          ? {
-              ...currentState,
-              schedules: currentState.schedules.map((schedule) =>
-                schedule.id === scheduleId
-                  ? {
-                      ...schedule,
-                      tasks: schedule.tasks.map((task) =>
-                        task.id === taskId ? updatedTask : task
-                      ),
-                    }
-                  : schedule
-              ),
-            }
-          : null
-      );
-    } catch (e) {
-      toast.error(
-        (e as AxiosError<{ statusCode: number; message: string }>).response
-          ?.data?.message
-      );
-    }
-  };
-
-  useEffect(() => {
-    if (!router || !router.query.personalProjectId || personalProject) {
-      return;
-    }
-    const { personalProjectId } = router.query;
-    getPersonalProject(personalProjectId as string)
-      .then((res) => {
-        setPersonalProject(res);
-      })
-      .catch((e) => {
-        toast.error(
-          (e as AxiosError<{ statusCode: number; message: string }>).response
-            ?.data?.message
-        );
-      });
-  }, [router, personalProject]);
 
   return (
     <>
@@ -249,7 +178,19 @@ export const PersonalProjectDetails = () => {
                       key={schedule.id}
                       onClick={() => setActiveSchedule(index)}
                     >
-                      <StepLabel sx={{ ":hover": { cursor: "pointer" } }}>
+                      <StepLabel
+                        sx={{ ":hover": { cursor: "pointer" } }}
+                        StepIconComponent={({ active }: StepIconProps) => (
+                          <CustomStepIcon
+                            active={active ?? false}
+                            // isCompleted
+                            // isInprogress
+                            // isDue
+                            // isFailed
+                            {...getScheduleStatus(schedule)}
+                          />
+                        )}
+                      >
                         <Typography fontWeight={600}>
                           {schedule.description}
                         </Typography>
@@ -324,8 +265,17 @@ export const PersonalProjectDetails = () => {
                     boxShadow: 1,
                   }}
                 >
-                  {personalProject.consultations.map((consultation) => (
-                    <ListItem key={consultation.id}>
+                  {personalProject.consultations.map((consultation, index) => (
+                    <ListItem
+                      key={consultation.id}
+                      divider={
+                        index !== personalProject.consultations.length - 1
+                      }
+                      disabled={isBefore(
+                        new Date(consultation.date),
+                        new Date()
+                      )}
+                    >
                       <ListItemAvatar>
                         <Avatar>
                           <GroupsIcon />

@@ -167,9 +167,15 @@ export const Consultations = () => {
                           <Grid item key={consultation.id}>
                             <Button
                               variant="outlined"
-                              onClick={() =>
-                                setSelectedConsultation(consultation)
-                              }
+                              onClick={() => {
+                                if (context?.isStudent) {
+                                  setSelectedConsultation(consultation);
+                                } else {
+                                  toast.warn(
+                                    "You can't reserve consultations as a teacher"
+                                  );
+                                }
+                              }}
                             >
                               {`${format(
                                 new Date(consultation.date),

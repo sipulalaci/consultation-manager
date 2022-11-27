@@ -204,9 +204,15 @@ export const PersonalProjects = () => {
               component="div"
               sx={{ textAlignLast: "center" }}
             >
-              You have no personal projects. Please, visit the{" "}
-              <Link href="/">projects page</Link> and apply for the desired one
-              or contact your teacher.
+              {context?.isStudent ? (
+                <>
+                  You have no personal projects. Please, visit the{" "}
+                  <Link href="/">projects page</Link> and apply for the desired
+                  one or contact your teacher.
+                </>
+              ) : (
+                "You have no students. Please wait from the to apply for one of your projects."
+              )}
             </Typography>
           </Grid>
         )}
