@@ -52,7 +52,9 @@ export class ConsultationController {
   @Get('student/:id')
   async getConsultations() {
     const personalProject = await this.prisma.personalProject.findMany({
-      where: { status: PersonalProjectStatus.APPROVED },
+      where: {
+        status: PersonalProjectStatus.APPROVED,
+      },
       include: {
         project: {
           include: {
@@ -74,6 +76,9 @@ export class ConsultationController {
         date: 'asc',
       },
       where: {
+        date: {
+          gte: new Date(),
+        },
         personalProjectId: null,
         participants: {
           some: {
@@ -89,6 +94,9 @@ export class ConsultationController {
   async getConsultationsByTeacher(@Param('id') id: any) {
     return this.prisma.consultation.findMany({
       where: {
+        date: {
+          gte: new Date(),
+        },
         participants: {
           some: {
             id,

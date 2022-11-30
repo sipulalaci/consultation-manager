@@ -30,7 +30,7 @@ export class PersonalProjectController {
 
   @Get('check-progression')
   async checkProgression() {
-    const checkedDate = addDays(new Date(2022, 10, 31), -1);
+    const checkedDate = addDays(new Date(), -1);
     const personalProjects = await this.prisma.personalProject.findMany({
       include: {
         student: true,

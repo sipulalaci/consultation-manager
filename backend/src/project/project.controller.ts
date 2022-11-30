@@ -29,7 +29,6 @@ export class ProjectController {
         },
       },
     });
-    console.log({ project });
     return project;
   }
 

@@ -48,7 +48,6 @@ protectedApi.interceptors.response.use(
     if (error.response.status === 401) {
       if (typeof window !== "undefined") {
         removeFromStorage("token");
-        // localStorage.removeItem("authToken");
         window.location.href = `/login`;
       }
     }

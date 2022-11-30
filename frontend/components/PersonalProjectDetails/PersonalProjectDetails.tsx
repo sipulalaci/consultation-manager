@@ -34,7 +34,8 @@ import ErrorIcon from "@mui/icons-material/Error";
 import { Schedule } from "../../types/Schedule";
 
 const getScheduleStatus = (schedule: Schedule) => {
-  const isComplete = schedule.tasks.every((task) => task.isDone);
+  const isComplete =
+    schedule.tasks.length !== 0 && schedule.tasks.every((task) => task.isDone);
   const isOverdue = isBefore(new Date(schedule.deadline), new Date());
   const isDue =
     isBefore(new Date(), new Date(schedule.deadline)) &&
@@ -71,7 +72,7 @@ export const PersonalProjectDetails = () => {
       isDue?: boolean;
       isFailed?: boolean;
     };
-  }>(({ theme, ownerState, scheduleState }) => ({
+  }>(({ ownerState, scheduleState }) => ({
     zIndex: 1,
     color: "#fff",
     width: 24,
@@ -183,10 +184,6 @@ export const PersonalProjectDetails = () => {
                         StepIconComponent={({ active }: StepIconProps) => (
                           <CustomStepIcon
                             active={active ?? false}
-                            // isCompleted
-                            // isInprogress
-                            // isDue
-                            // isFailed
                             {...getScheduleStatus(schedule)}
                           />
                         )}

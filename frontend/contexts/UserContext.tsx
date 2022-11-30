@@ -36,17 +36,6 @@ export const UserContext = ({ children }: UserContextProps) => {
   const [hasApprovedPersonalProject, setHasApprovedPersonalProject] =
     useState(false);
 
-  // const isTeacher = user?.type === UserEnum.TEACHER;
-  // const isStudent = user?.type === UserEnum.STUDENT;
-  // const hasActivePersonalProject = user?.personalProjects
-  //   ? user?.personalProjects?.length > 0
-  //   : false;
-  // const hasApprovedPersonalProject = user?.personalProjects
-  //   ? user?.personalProjects?.some(
-  //       (project) => project.status === PersonalProjectStatusEnum.APPROVED
-  //     )
-  //   : false;
-
   useEffect(() => {
     if (!user) {
       const token = getFromStorage("token");

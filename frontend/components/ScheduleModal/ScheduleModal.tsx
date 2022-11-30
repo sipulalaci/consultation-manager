@@ -11,7 +11,7 @@ import {
   Typography,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
-import { Formik } from "formik";
+import { Formik, useFormik } from "formik";
 import { style } from "../../consts/ModalStyle";
 import { addDays } from "date-fns";
 
@@ -29,6 +29,17 @@ export const ScheduleModal = ({
   onSuccess,
 }: Props) => {
   const [isOpen, setIsOpen] = useState(forceOpen);
+  const { values, errors, handleSubmit, resetForm, setFieldValue } = useFormik({
+    initialValues: {
+      deadline: "",
+      description: "",
+    },
+    onSubmit: (values) => {
+      onSuccess(values);
+      setIsOpen(false);
+      resetForm();
+    },
+  });
 
   useEffect(() => {
     if (forceOpen) {
@@ -43,87 +54,73 @@ export const ScheduleModal = ({
           <AddIcon />
         </IconButton>
       )}
-      <Formik
-        initialValues={{
-          deadline: "",
-          description: "",
-        }}
-        onSubmit={(values) => {
-          onSuccess(values);
-          setIsOpen(false);
-        }}
-      >
-        {({ values, errors, handleSubmit, resetForm, setFieldValue }) => (
-          <Modal open={isOpen} onClose={() => setIsOpen(false)}>
-            <Box sx={style}>
-              <Typography
-                id="modal-modal-title"
-                sx={{ mb: 2 }}
-                variant="h6"
-                component="h2"
-              >
-                Add new schedule section
-              </Typography>
-              <Grid container spacing={2}>
-                <Grid item xs={12}>
-                  <DatePicker
-                    value={values.deadline}
-                    onChange={(value) => setFieldValue("deadline", value)}
-                    inputFormat="yyyy/MM/dd"
-                    minDate={addDays(new Date(), 1)}
-                    renderInput={(params) => (
-                      <TextField {...params} fullWidth autoFocus />
-                    )}
-                  ></DatePicker>
-                </Grid>
-                <Grid item xs={12}>
-                  <TextField
-                    id="schedule-description"
-                    name="description"
-                    error={!!errors.description}
-                    value={values.description}
-                    label="Description"
-                    onChange={(e) =>
-                      setFieldValue("description", e.target.value)
-                    }
-                    fullWidth
-                  />
-                </Grid>
-              </Grid>
-              <Box
-                sx={{
-                  mt: 2,
-                  display: "flex",
-                  gap: 2,
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
-                <Button
-                  variant="contained"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    handleSubmit();
-                  }}
-                  disabled={Object.keys(errors).length > 0}
-                >
-                  Create
-                </Button>
-                <Button
-                  variant="outlined"
-                  onClick={() => {
-                    resetForm();
-                    onClose();
-                    setIsOpen(false);
-                  }}
-                >
-                  Cancel
-                </Button>
-              </Box>
-            </Box>
-          </Modal>
-        )}
-      </Formik>
+
+      <Modal open={isOpen} onClose={() => setIsOpen(false)}>
+        <Box sx={style}>
+          <Typography
+            id="modal-modal-title"
+            sx={{ mb: 2 }}
+            variant="h6"
+            component="h2"
+          >
+            Add new schedule section
+          </Typography>
+          <Grid container spacing={2}>
+            <Grid item xs={12}>
+              <DatePicker
+                value={values.deadline}
+                onChange={(value) => setFieldValue("deadline", value)}
+                inputFormat="yyyy/MM/dd"
+                minDate={addDays(new Date(), 1)}
+                renderInput={(params) => (
+                  <TextField {...params} fullWidth autoFocus />
+                )}
+              ></DatePicker>
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                id="schedule-description"
+                name="description"
+                error={!!errors.description}
+                value={values.description}
+                label="Description"
+                onChange={(e) => setFieldValue("description", e.target.value)}
+                fullWidth
+              />
+            </Grid>
+          </Grid>
+          <Box
+            sx={{
+              mt: 2,
+              display: "flex",
+              gap: 2,
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <Button
+              variant="contained"
+              onClick={(e) => {
+                e.preventDefault();
+                handleSubmit();
+              }}
+              disabled={Object.keys(errors).length > 0}
+            >
+              Create
+            </Button>
+            <Button
+              variant="outlined"
+              onClick={() => {
+                resetForm();
+                onClose();
+                setIsOpen(false);
+              }}
+            >
+              Cancel
+            </Button>
+          </Box>
+        </Box>
+      </Modal>
     </LocalizationProvider>
   );
 };

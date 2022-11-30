@@ -49,7 +49,6 @@ export const Projects = () => {
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [shouldForceModalOpen, setShouldForceModalOpen] = useState(false);
-  console.log({ context });
 
   const handleSignup = async () => {
     if (!context?.user || !selectedProject) return;
